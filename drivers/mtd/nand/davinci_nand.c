@@ -278,6 +278,20 @@ static int nand_davinci_correct_data(struct mtd_info *mtd, u_char *dat,
 static struct nand_ecclayout nand_davinci_4bit_layout_oobfirst = {
 #if defined(CONFIG_SYS_NAND_PAGE_2K)
 	.eccbytes = 40,
+#ifdef CONFIG_SYS_NAND_RBL_OOB_LAYOUT
+	.eccpos = {
+		 6,  7,   8,  9, 10, 11, 12, 13, 14, 15,
+		 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+		 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+		 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
+		},
+	.oobfree = {
+		{.offset =  0, .length = 6, },
+		{.offset = 16, .length = 6, },
+		{.offset = 32, .length = 6, },
+		{.offset = 48, .length = 6, },
+	},
+#else
 	.eccpos = {
 		24, 25, 26, 27, 28,
 		29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
@@ -288,6 +302,7 @@ static struct nand_ecclayout nand_davinci_4bit_layout_oobfirst = {
 	.oobfree = {
 		{.offset = 2, .length = 22, },
 	},
+#endif
 #elif defined(CONFIG_SYS_NAND_PAGE_4K)
 	.eccbytes = 80,
 	.eccpos = {
