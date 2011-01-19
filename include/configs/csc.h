@@ -199,29 +199,25 @@
 #define CONFIG_SYS_BARGSIZE	1024			/* bootarg Size */
 #define CONFIG_SYS_LOAD_ADDR	0x80700000		/* kernel address */
 
-
-/* NAND configuration issocketed with two chipselects just like the DM355 EVM.
- * It normally comes with a 2GByte SLC part with 2KB pages
- * (and 128KB erase blocks); other
- * 2GByte parts may have 4KB pages, 256KB erase blocks, and use MLC.  (MLC
- * pretty much demands the 4-bit ECC support.)  You can of course swap in
- * other parts, including small page ones.
- */
+/* NAND layout */
 #define MTDIDS_DEFAULT		"nand0=davinci_nand.0"
 
-#ifdef CONFIG_SYS_NAND_LARGEPAGE
-/*  Use same layout for 128K/256K blocks; allow some bad blocks */
-#define PART_BOOT		"2m(bootloader)ro,"
-#else
-/* Assume 16K erase blocks; allow a few bad ones. */
-#define PART_BOOT		"512k(bootloader)ro,"
-#endif
+#define PART_UBL		"3200k(ubl)ro,"
+#define PART_UBOOT		"3200k(uboot),"
+#define PART_PARAMS		"1792k(params),"
+#define PARTS_BOOT		PART_UBL PART_UBOOT PART_PARAMS
 
-#define PART_KERNEL		"4m(kernel),"	/* kernel + initramfs */
-#define PART_REST		"-(filesystem)"
+#define PART_KERNEL_1		"4m(kernel1),"
+#define PART_KERNEL_2		"4m(kernel2),"
+#define PARTS_KERNEL		PART_KERNEL_1 PART_KERNEL_2
+
+#define PART_ROOT_1		"192m(root1),"
+#define PART_ROOT_2		"192m(root2),"
+#define PART_LOGS		"-(logs)"
+#define PARTS_FS		PART_ROOT_1 PART_ROOT_2 PART_LOGS
 
 #define MTDPARTS_DEFAULT	\
-	"mtdparts=davinci_nand.0:" PART_BOOT PART_KERNEL PART_REST
+	"mtdparts=davinci_nand.0:" PARTS_BOOT PARTS_KERNEL PARTS_FS
 
 #define CONFIG_MAX_RAM_BANK_SIZE       (256 << 20)     /* 256 MB */
 
