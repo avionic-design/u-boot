@@ -157,7 +157,6 @@
 
 /* U-Boot general configuration */
 #undef CONFIG_USE_IRQ				/* No IRQ/FIQ in U-Boot */
-#define CONFIG_BOOTFILE		"uImage"	/* Boot file name */
 #define CONFIG_SYS_PROMPT	"CSC # "	/* Monitor Command Prompt */
 #define CONFIG_SYS_CBSIZE	1024		/* Console I/O Buffer Size  */
 #define CONFIG_SYS_PBSIZE			/* Print buffer size */ \
@@ -176,11 +175,8 @@
 #endif
 
 #define CONFIG_BOOTDELAY	10
-#define CONFIG_BOOTCOMMAND \
-		""
-#define CONFIG_BOOTARGS \
-		"console=ttyS0,115200n8 " \
-		"root=/dev/mmcblk0p1 rootwait rootfstype=ext3 ro"
+#define CONFIG_BOOTCOMMAND	"run loadk set-bootargs ; bootm"
+#define CONFIG_BOOTARGS		""
 
 #define CONFIG_CMDLINE_EDITING
 #define CONFIG_VERSION_VARIABLE
@@ -224,6 +220,72 @@
 #define CONFIG_SYS_SDRAM_BASE          PHYS_SDRAM_1
 #define CONFIG_SYS_INIT_SP_ADDR                \
 	(CONFIG_SYS_SDRAM_BASE + 0x1000 - GENERATED_GBL_DATA_SIZE)
+
+/* Default kernel loading method: dhcp, tftp, nand1 or nand2 */
+#define BOOT_LOADK_DEFAULT_MODE		"nand1"
+/* Default root mode: nfs or nand */
+#define BOOT_ROOT_DEFAULT_MODE		"nfs"
+
+/* Default root partition when running from NAND */
+#define NAND_BOOT_DEFAULT_DEV		"/dev/mtdblock5"
+#define NFS_BOOT_DEFAULT_SERVERIP	"172.21.30.139"
+#define NFS_BOOT_DEFAULT_ROOTPATH	"/home/alban/roots/pbs_dm365"
+
+/* Default kernel parameters needed for ALL configs */
+#define BASE_KERNEL_ARGS		"console=ttyS0,115200n8 vpfe-capture.interface=1"
+/* Memory related parameters */
+#define MEM_KERNEL_ARGS			"mem=188M cmemk.phys_start=0x8BC00000 cmemk.phys_end=0x90000000"
+
+/* Defaults when running from NFS */
+#define CONFIG_BOOTFILE			"dm365/uImage"	/* Boot file name */
+#define CONFIG_SERVERIP			"172.21.30.139"
+#define CONFIG_ROOTPATH			"/home/alban/roots/pbs_dm365"
+
+
+/* Setup the boot command */
+#define BOOT_ENV \
+    "baseargs="BASE_KERNEL_ARGS"\0"					\
+    "memargs="MEM_KERNEL_ARGS"\0"					\
+    "kernel-from="BOOT_LOADK_DEFAULT_MODE"\0"				\
+    "boot-from="BOOT_ROOT_DEFAULT_MODE"\0"				\
+    "set-bootargs=run set-${boot-from}-args ;"				\
+                " setenv bootargs ${memargs} ${baseargs} ${rootargs}\0"	\
+
+/* Setup rootargs to run from NAND */
+#define NAND_BOOT_ENV \
+    "set-nand-args=setenv rootargs root=${nand-dev} ${nand-mode}"	\
+                          " rootfstype=jffs2\0"				\
+    "nand-mode=ro\0"							\
+    "nand-dev="NAND_BOOT_DEFAULT_DEV"\0"				\
+
+/* Setup rootargs to run from NFS */
+#define NFS_BOOT_ENV \
+    "set-nfs-args=setenv rootargs root=/dev/nfs ${nfs-mode}"		\
+                         " nfsroot=${serverip}:${rootpath} ip=dhcp\0"	\
+    "nfs-mode=ro\0"							\
+    "serverip="NFS_BOOT_DEFAULT_SERVERIP"\0"				\
+    "rootpath="NFS_BOOT_DEFAULT_ROOTPATH"\0"				\
+
+/* Various method to load a kernel in memory */
+#define LOAD_KERNEL_ENV \
+    "loadk=run loadk-${kernel-from}\0"					\
+    "loadk-nand1=nboot nand0,3\0"					\
+    "loadk-nand2=nboot nand0,4\0"					\
+    "loadk-tftp=tftpboot\0"						\
+    "loadk-dhcp=dhcp\0"							\
+
+/* MTD stuff */
+#define MTD_ENV \
+    "mtdids="MTDIDS_DEFAULT"\0"						\
+    "mtdparts="MTDPARTS_DEFAULT"\0"					\
+
+/* All the additional environement we need */
+#define CONFIG_EXTRA_ENV_SETTINGS \
+    BOOT_ENV			  \
+    NAND_BOOT_ENV		  \
+    NFS_BOOT_ENV		  \
+    LOAD_KERNEL_ENV		  \
+    MTD_ENV			  \
 
 
 #endif /* __CONFIG_H */
