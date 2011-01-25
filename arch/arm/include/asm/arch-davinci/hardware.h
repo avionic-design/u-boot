@@ -331,6 +331,9 @@ struct davinci_psc_regs {
 #define PINMUX3				0x01c4000c
 #define PINMUX4				0x01c40010
 
+#define PUPDCTL0			0x01c40078
+#define PUPDCTL1			0x01c4007C
+
 #else /* CONFIG_SOC_DA8XX */
 
 struct davinci_pllc_regs {

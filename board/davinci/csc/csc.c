@@ -43,6 +43,20 @@ int board_eth_init(bd_t *bis)
 	int i;
 	struct davinci_gpio *gpio1_base =
 			(struct davinci_gpio *)DAVINCI_GPIO_BANK01;
+	struct davinci_gpio *gpio3_base =
+			(struct davinci_gpio *)DAVINCI_GPIO_BANK23;
+
+	/* Disable the pull down on GPIO30, 32 and 33 */
+	writel((readl(PUPDCTL0) & ~(1<<30)), PUPDCTL0);
+	writel((readl(PUPDCTL1) & ~((1<<0)|(1<<1))), PUPDCTL1);
+
+	/* Configure GPIO30, 32 and 33 as output */
+	writel((readl(&gpio1_base->dir) & ~(1 << 30)), &gpio1_base->dir);
+	writel((readl(&gpio3_base->dir) & ~((1 << 1) | (1 << 0))),  &gpio3_base->dir);
+
+	/* GPIO30, 32 and 33 high */
+	writel((readl(&gpio1_base->out_data) | (1 << 30)), &gpio1_base->out_data);
+	writel((readl(&gpio3_base->out_data) | (1 << 0) | (1 << 1)), &gpio3_base->out_data);
 
 	/* Configure PINMUX 3 to enable EMAC pins */
 	writel((readl(PINMUX3) | 0x1affff), PINMUX3);
