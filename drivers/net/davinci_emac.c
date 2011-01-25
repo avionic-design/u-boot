@@ -150,6 +150,8 @@ static int davinci_eth_phy_detect(void)
 
 	active_phy_addr = 0xff;
 
+	/* Wait a bit for the phy to init itself */
+	udelay(10000);
 	phy_act_state = readl(&adap_mdio->ALIVE) & EMAC_MDIO_PHY_MASK;
 	if (phy_act_state == 0)
 		return(0);				/* No active PHYs */
@@ -217,6 +219,27 @@ int davinci_eth_phy_write(u_int8_t phy_addr, u_int8_t reg_num, u_int16_t data)
 		;
 
 	return(1);
+}
+
+/* PHY functions for a generic switch, assume 100Mbit always connected */
+static int switch_init_phy(int phy_addr)
+{
+	return 1;
+}
+
+static int switch_is_phy_connected(int phy_addr)
+{
+	return 1;
+}
+
+static int switch_get_link_speed(int phy_addr)
+{
+	return 1;
+}
+
+static int switch_auto_negotiate(int phy_addr)
+{
+	return 1;
 }
 
 /* PHY functions for a generic PHY */
@@ -722,6 +745,13 @@ int davinci_emac_initialize(void)
 			phy.is_phy_connected = dp83848_is_phy_connected;
 			phy.get_link_speed = dp83848_get_link_speed;
 			phy.auto_negotiate = dp83848_auto_negotiate;
+			break;
+		case PHY_KS8995MA:
+			sprintf(phy.name, "KS8995MA @ 0x%02x", active_phy_addr);
+			phy.init              = switch_init_phy;
+			phy.is_phy_connected  = switch_is_phy_connected;
+			phy.get_link_speed    = switch_get_link_speed;
+			phy.auto_negotiate    = switch_auto_negotiate;
 			break;
 		default:
 			sprintf(phy.name, "GENERIC @ 0x%02x", active_phy_addr);
