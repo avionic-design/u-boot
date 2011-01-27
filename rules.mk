@@ -25,7 +25,7 @@
 
 _depend:	$(obj).depend
 
-$(obj).depend:	$(src)Makefile $(TOPDIR)/config.mk $(SRCS) $(HOSTSRCS)
+$(obj).depend:	$(src)Makefile $(TOPDIR)/config.mk $(SRCS) $(HOSTSRCS) $(BINSRCS)
 		@rm -f $@
 		@touch $@
 		@for f in $(SRCS); do \
@@ -35,6 +35,10 @@ $(obj).depend:	$(src)Makefile $(TOPDIR)/config.mk $(SRCS) $(HOSTSRCS)
 		@for f in $(HOSTSRCS); do \
 			g=`basename $$f | sed -e 's/\(.*\)\.\w/\1.o/'`; \
 			$(HOSTCC) -M $(HOSTCPPFLAGS) -MQ $(obj)$$g $$f >> $@ ; \
+		done
+		@for f in $(BINSRCS); do \
+			g=`basename $$f | sed -e 's/\(.*\)\.\w/\1.o/'`; \
+			$(CC) -M $(BINCPPFLAGS) -MQ $(obj)$$g $$f >> $@ ; \
 		done
 
 $(HOSTOBJS): $(obj)%.o: %.c
