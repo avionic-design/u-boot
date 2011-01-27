@@ -27,25 +27,80 @@
  * See included "fw_env.config" sample file (TRAB board)
  * for notes on configuration.
  */
-#define CONFIG_FILE     "/etc/fw_env.config"
+#include <config.h>
 
+//#define CONFIG_FILE     "/etc/fw_env.config"
+
+#ifndef CONFIG_ENV_DEVICE1_NAME
+#define CONFIG_ENV_DEVICE1_NAME "/dev/mtd1"
+#endif
+#ifndef CONFIG_ENV_DEVICE1_OFFSET
+#define CONFIG_ENV_DEVICE1_OFFSET 0x0000
+#endif
+#ifndef CONFIG_ENV_DEVICE1_SIZE
+#ifdef CONFIG_ENV_SIZE
+#define CONFIG_ENV_DEVICE1_SIZE CONFIG_ENV_SIZE
+#else
+#define CONFIG_ENV_DEVICE1_SIZE 0x4000
+#endif
+#endif
+#ifndef CONFIG_ENV_DEVICE1_ESIZE
+#ifdef CONFIG_ENV_ERASE_SIZE
+#define CONFIG_ENV_DEVICE1_ESIZE CONFIG_ENV_ERASE_SIZE
+#else
+#define CONFIG_ENV_DEVICE1_ESIZE 0x4000
+#endif
+#endif
+#ifndef CONFIG_ENV_DEVICE1_SECTORS
+#ifdef CONFIG_ENV_DEVICE_SECTORS
+#define CONFIG_ENV_DEVICE1_SECTORS CONFIG_ENV_DEVICE_SECTORS
+#else
+#define CONFIG_ENV_DEVICE1_SECTORS 1
+#endif
+#endif
+
+#ifndef CONFIG_ENV_DEVICE2_NAME
+#define CONFIG_ENV_DEVICE2_NAME "/dev/mtd2"
+#endif
+#ifndef CONFIG_ENV_DEVICE2_OFFSET
+#define CONFIG_ENV_DEVICE2_OFFSET 0x0000
+#endif
+#ifndef CONFIG_ENV_DEVICE2_SIZE
+#ifdef CONFIG_ENV_SIZE
+#define CONFIG_ENV_DEVICE2_SIZE CONFIG_ENV_SIZE
+#else
+#define CONFIG_ENV_DEVICE2_SIZE 0x4000
+#endif
+#endif
+#ifndef CONFIG_ENV_DEVICE2_ESIZE
+#ifdef CONFIG_ENV_ERASE_SIZE
+#define CONFIG_ENV_DEVICE2_ESIZE CONFIG_ENV_ERASE_SIZE
+#else
+#define CONFIG_ENV_DEVICE2_ESIZE 0x4000
+#endif
+#endif
+#ifndef CONFIG_ENV_DEVICE2_SECTORS
+#ifdef CONFIG_ENV_DEVICE_SECTORS
+#define CONFIG_ENV_DEVICE2_SECTORS CONFIG_ENV_DEVICE_SECTORS
+#else
+#define CONFIG_ENV_DEVICE2_SECTORS 1
+#endif
+#endif
+
+#ifdef CONFIG_ENV_OFFSET_REDUND
 #define HAVE_REDUND /* For systems with 2 env sectors */
-#define DEVICE1_NAME      "/dev/mtd1"
-#define DEVICE2_NAME      "/dev/mtd2"
-#define DEVICE1_OFFSET    0x0000
-#define ENV1_SIZE         0x4000
-#define DEVICE1_ESIZE     0x4000
-#define DEVICE2_OFFSET    0x0000
-#define ENV2_SIZE         0x4000
-#define DEVICE2_ESIZE     0x4000
+#endif
+#define DEVICE1_NAME      CONFIG_ENV_DEVICE1_NAME
+#define DEVICE2_NAME      CONFIG_ENV_DEVICE2_NAME
+#define DEVICE1_OFFSET    CONFIG_ENV_DEVICE1_OFFSET
+#define ENV1_SIZE         CONFIG_ENV_DEVICE1_SIZE
+#define DEVICE1_ESIZE     CONFIG_ENV_DEVICE1_ESIZE
+#define DEVICE1_ENVSECTORS CONFIG_ENV_DEVICE1_SECTORS
+#define DEVICE2_OFFSET    CONFIG_ENV_DEVICE2_OFFSET
+#define ENV2_SIZE         CONFIG_ENV_DEVICE2_SIZE
+#define DEVICE2_ESIZE     CONFIG_ENV_DEVICE2_ESIZE
+#define DEVICE2_ENVSECTORS CONFIG_ENV_DEVICE2_SECTORS
 
-#define CONFIG_BAUDRATE		115200
-#define CONFIG_BOOTDELAY	5	/* autoboot after 5 seconds	*/
-#define CONFIG_BOOTCOMMAND							\
-	"bootp; "								\
-	"setenv bootargs root=/dev/nfs nfsroot=${serverip}:${rootpath} "	\
-	"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}::off; "	\
-	"bootm"
 
 extern int   fw_printenv(int argc, char *argv[]);
 extern char *fw_getenv  (char *name);
