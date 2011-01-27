@@ -23,24 +23,23 @@
 
 include $(TOPDIR)/config.mk
 
-HOSTSRCS := $(obj)crc32.c  fw_env.c  fw_env_main.c
+BINSRCS := $(obj)crc32.c  fw_env.c  fw_env_main.c
 HEADERS	:= fw_env.h
 
 # Compile for a hosted environment on the target
-HOSTCPPFLAGS  = -idirafter $(SRCTREE)/include \
+BINCPPFLAGS   = -idirafter $(SRCTREE)/include \
 		-idirafter $(OBJTREE)/include2 \
 		-idirafter $(OBJTREE)/include \
 		-DUSE_HOSTCC
 
 ifeq ($(MTD_VERSION),old)
-HOSTCPPFLAGS += -DMTD_OLD
+BINCPPFLAGS += -DMTD_OLD
 endif
 
 all:	$(obj)fw_printenv
 
-# Some files complain if compiled with -pedantic, use HOSTCFLAGS_NOPED
-$(obj)fw_printenv:	$(HOSTSRCS) $(HEADERS)
-	$(HOSTCC) $(HOSTCFLAGS_NOPED) $(HOSTLDFLAGS) -o $@ $(HOSTSRCS)
+$(obj)fw_printenv:	$(BINSRCS) $(HEADERS)
+	$(CC) $(BINCFLAGS) $(BINLDFLAGS) -o $@ $(filter %.c,$^)
 
 clean:
 	rm -f $(obj)fw_printenv $(obj)crc32.c
