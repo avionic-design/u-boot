@@ -63,6 +63,7 @@ BIN_FILES-$(CONFIG_CMD_NET) += gen_eth_addr$(SFX)
 BIN_FILES-$(CONFIG_CMD_LOADS) += img2srec$(SFX)
 BIN_FILES-$(CONFIG_INCA_IP) += inca-swap-bytes$(SFX)
 BIN_FILES-y += mkimage$(SFX)
+BIN_FILES-y += $(ARCH)/mkimage
 BIN_FILES-$(CONFIG_NETCONSOLE) += ncb$(SFX)
 BIN_FILES-$(CONFIG_SHA1_CHECK_UB_IMG) += ubsha1$(SFX)
 
@@ -149,6 +150,7 @@ HOSTCPPFLAGS =	-idirafter $(SRCTREE)/include \
 		-DUSE_HOSTCC \
 		-D__KERNEL_STRICT_NAMES
 
+BINCPPFLAGS = $(HOSTCPPFLAGS)
 
 all:	$(obj).depend $(BINS) $(LOGO-y) subdirs
 
@@ -189,6 +191,20 @@ $(obj)mkimage$(SFX):	$(obj)crc32.o \
 	$(HOSTCC) $(HOSTCFLAGS) $(HOSTLDFLAGS) -o $@ $^
 	$(HOSTSTRIP) $@
 
+$(obj)$(ARCH)/mkimage:	$(obj)$(ARCH)/crc32.o \
+			$(obj)$(ARCH)/default_image.o \
+			$(obj)$(ARCH)/fit_image.o \
+			$(obj)$(ARCH)/image.o \
+			$(obj)$(ARCH)/imximage.o \
+			$(obj)$(ARCH)/kwbimage.o \
+			$(obj)$(ARCH)/md5.o \
+			$(obj)$(ARCH)/mkimage.o \
+			$(obj)$(ARCH)/os_support.o \
+			$(obj)$(ARCH)/sha1.o \
+			$(patsubst $(obj)%.o,$(obj)$(ARCH)/%.o,$(LIBFDT_OBJS))
+	$(CC) $(BINCFLAGS) $(BINLDFLAGS) -o $@ $^
+	$(STRIP) $@
+
 $(obj)mpc86x_clk$(SFX):	$(obj)mpc86x_clk.o
 	$(HOSTCC) $(HOSTCFLAGS) $(HOSTLDFLAGS) -o $@ $^
 	$(HOSTSTRIP) $@
@@ -209,6 +225,23 @@ $(obj)%.o: $(SRCTREE)/lib/%.c
 
 $(obj)%.o: $(SRCTREE)/lib/libfdt/%.c
 	$(HOSTCC) -g $(HOSTCFLAGS_NOPED) -c -o $@ $<
+
+$(obj)$(ARCH)/%.o: %.c
+	@test -d $(@D) || mkdir -p $(@D)
+	$(CC) -g $(BINCFLAGS) -c -o $@ $<
+
+$(obj)$(ARCH)/%.o: $(SRCTREE)/common/%.c
+	@test -d $(@D) || mkdir -p $(@D)
+	$(CC) -g $(BINCFLAGS) -c -o $@ $<
+
+$(obj)$(ARCH)/%.o: $(SRCTREE)/lib/%.c
+	@test -d $(@D) || mkdir -p $(@D)
+	$(CC) -g $(BINCFLAGS) -c -o $@ $<
+
+$(obj)$(ARCH)/%.o: $(SRCTREE)/lib/libfdt/%.c
+	@test -d $(@D) || mkdir -p $(@D)
+	$(CC) -g $(BINCFLAGS) -c -o $@ $<
+
 
 subdirs:
 ifeq ($(TOOLSUBDIRS),)
