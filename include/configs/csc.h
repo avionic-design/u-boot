@@ -183,7 +183,7 @@
 #endif
 
 #define CONFIG_BOOTDELAY	10
-#define CONFIG_BOOTCOMMAND	"run loadk set-bootargs ; bootm"
+#define CONFIG_BOOTCOMMAND	"run apply-updates loadk set-bootargs ; bootm"
 #define CONFIG_BOOTARGS		""
 
 #define CONFIG_CMDLINE_EDITING
@@ -257,7 +257,8 @@
     "kernel-from="BOOT_LOADK_DEFAULT_MODE"\0"				\
     "boot-from="BOOT_ROOT_DEFAULT_MODE"\0"				\
     "set-bootargs=run set-${boot-from}-args ;"				\
-                " setenv bootargs ${memargs} ${baseargs} ${rootargs}\0"	\
+                " setenv bootargs ${memargs} ${baseargs} "		\
+                                 "${rootargs} ${mtdparts}\0"		\
 
 /* Setup rootargs to run from NAND */
 #define NAND_BOOT_ENV \
@@ -287,6 +288,34 @@
     "mtdids="MTDIDS_DEFAULT"\0"						\
     "mtdparts="MTDPARTS_DEFAULT"\0"					\
 
+/* Update stuff */
+#define UPDATE_ENV \
+    "updateable-vars="							\
+        "boot-from kernel-from "					\
+        "nand-dev "							\
+        "serverip rootpath bootfile\0"					\
+    "get-next-value="							\
+        "next_var=next-$var ; "						\
+        "setenv -set-next-value next_value=\\$\\{$next_var\\} ; "	\
+        "run -set-next-value ; "					\
+        "setenv -set-next-value\0"					\
+    "apply-updates="							\
+       "setenv -apply-var-updates ; "					\
+       "for var in ${updateable-vars} ; do "				\
+           "run get-next-value ; "					\
+           "if test \"x$next_value\" != \"x\" ; then ; "		\
+               "setenv ${next_var} ; "					\
+               "setenv -apply-var-updates ${-apply-var-updates} \\; "	\
+                                     "setenv ${var} ${next_value} ; "	\
+           "fi ; "							\
+       "done ; "							\
+       "if test \"x${-apply-var-updates}\" != \"x\" ; then ; "		\
+           "saveenv ; saveenv ; "					\
+           "run -apply-var-updates ; "					\
+           "setenv -apply-var-updates ; "				\
+       "fi ; "								\
+       "true"								\
+
 /* All the additional environement we need */
 #define CONFIG_EXTRA_ENV_SETTINGS \
     BOOT_ENV			  \
@@ -294,6 +323,6 @@
     NFS_BOOT_ENV		  \
     LOAD_KERNEL_ENV		  \
     MTD_ENV			  \
-
+    UPDATE_ENV			  \
 
 #endif /* __CONFIG_H */
