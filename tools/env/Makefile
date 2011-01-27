@@ -36,10 +36,13 @@ ifeq ($(MTD_VERSION),old)
 BINCPPFLAGS += -DMTD_OLD
 endif
 
-all:	$(obj)fw_printenv
+all:	$(obj)fw_printenv $(obj)fw_setenv
 
 $(obj)fw_printenv:	$(BINSRCS) $(HEADERS)
 	$(CC) $(BINCFLAGS) $(BINLDFLAGS) -o $@ $(filter %.c,$^)
+
+$(obj)fw_setenv: $(obj)fw_printenv
+	ln -s $(<F) $@
 
 clean:
 	rm -f $(obj)fw_printenv $(obj)crc32.c
