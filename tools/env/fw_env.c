@@ -490,8 +490,8 @@ int fw_setenv(int argc, char *argv[])
 			value = (char *)malloc(len - strlen(name));
 			if (!value) {
 				fprintf(stderr,
-				"Cannot malloc %u bytes: %s\n",
-				len - strlen(name), strerror(errno));
+				"Cannot malloc %lu bytes: %s\n",
+				(unsigned long)(len - strlen(name)), strerror(errno));
 				return -1;
 			}
 			memset(value, 0, len - strlen(name));
@@ -808,8 +808,8 @@ static int flash_write_buf (int dev, int fd, void *buf, size_t count,
 		data = malloc (erase_len);
 		if (!data) {
 			fprintf (stderr,
-				 "Cannot malloc %u bytes: %s\n",
-				 erase_len, strerror (errno));
+				 "Cannot malloc %lu bytes: %s\n",
+				 (unsigned long)erase_len, strerror (errno));
 			return -1;
 		}
 
@@ -1086,7 +1086,7 @@ int fw_env_open(void)
 	if (addr0 == NULL) {
 		fprintf (stderr,
 			"Not enough memory for environment (%ld bytes)\n",
-			CONFIG_ENV_SIZE);
+			 (long)CONFIG_ENV_SIZE);
 		return -1;
 	}
 
@@ -1125,7 +1125,7 @@ int fw_env_open(void)
 		if (addr1 == NULL) {
 			fprintf (stderr,
 				"Not enough memory for environment (%ld bytes)\n",
-				CONFIG_ENV_SIZE);
+				 (long)CONFIG_ENV_SIZE);
 			return -1;
 		}
 		redundant = addr1;
