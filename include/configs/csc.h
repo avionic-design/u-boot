@@ -258,7 +258,8 @@
     "boot-from="BOOT_ROOT_DEFAULT_MODE"\0"				\
     "set-bootargs=run set-${boot-from}-args ;"				\
                 " setenv bootargs ${memargs} ${baseargs} "		\
-                                 "${rootargs} ${mtdparts}\0"		\
+                                 "${rootargs} ${mtdparts} "		\
+                                 "u-boot.kernel-from=${kfound}\0"	\
 
 /* Setup rootargs to run from NAND */
 #define NAND_BOOT_ENV \
@@ -277,7 +278,17 @@
 
 /* Various method to load a kernel in memory */
 #define LOAD_KERNEL_ENV \
-    "loadk=run loadk-${kernel-from}\0"					\
+    "loadk=kfound=; "							\
+        "for kfrom in ${kernel-from} ; do "				\
+            "if test \"x$kfound\" = \"x\" ; then "			\
+                "run loadk-$kfrom && kfound=$kfrom ; "			\
+            "fi ; "							\
+        "done ; "							\
+        "if test \"x$kfound\" = \"x\" ; then "				\
+            "echo Failed to load kernel! ; "				\
+            "reset ; "							\
+        "fi ; "								\
+        "true\0"							\
     "loadk-nand1=nboot nand0,3\0"					\
     "loadk-nand2=nboot nand0,4\0"					\
     "loadk-tftp=tftpboot\0"						\
