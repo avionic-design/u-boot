@@ -336,4 +336,17 @@
     MTD_ENV			  \
     UPDATE_ENV			  \
 
+/* Alternative build with NAND handling compatible with the RBL */
+#ifdef CONFIG_CSC_RBL
+/* Enable the RBL OOB layout */
+#define CONFIG_SYS_NAND_RBL_OOB_LAYOUT
+/* Disable the Bad blocks table, we don't want to write it with the RBL OOB layout. */
+#undef  CONFIG_SYS_NAND_USE_FLASH_BBT
+/* Ditto for environment */
+#undef  CONFIG_ENV_IS_IN_NAND
+#undef  CONFIG_ENV_OFFSET
+#undef  CONFIG_ENV_OFFSET_REDUND
+#define CONFIG_ENV_IS_NOWHERE
+#endif
+
 #endif /* __CONFIG_H */
