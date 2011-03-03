@@ -307,7 +307,7 @@
         "serverip rootpath bootfile\0"					\
     "get-next-value="							\
         "next_var=next-$var ; "						\
-        "setenv -set-next-value next_value=\\$\\{$next_var\\} ; "	\
+        "setenv -set-next-value next_value=\\\\$\\\\{$next_var\\\\} ; "	\
         "run -set-next-value ; "					\
         "setenv -set-next-value\0"					\
     "apply-updates="							\
@@ -316,7 +316,7 @@
            "run get-next-value ; "					\
            "if test \"x$next_value\" != \"x\" ; then ; "		\
                "setenv ${next_var} ; "					\
-               "setenv -apply-var-updates ${-apply-var-updates} \\; "	\
+               "setenv -apply-var-updates ${-apply-var-updates} \\\\; "	\
                                      "setenv ${var} ${next_value} ; "	\
            "fi ; "							\
        "done ; "							\
