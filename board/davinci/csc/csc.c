@@ -33,6 +33,9 @@ int board_init(void)
 	gd->bd->bi_arch_number = MACH_TYPE_CSC;
 	gd->bd->bi_boot_params = PHYS_SDRAM_1 + 0x100;
 
+#if defined(CONFIG_HW_WATCHDOG) || defined(CONFIG_WATCHDOG)
+	hw_watchdog_init();
+#endif
 	return 0;
 }
 
