@@ -58,9 +58,9 @@ static u32 wdt_base  = CONFIG_SYS_WATCHDOG_BASE;
 void hw_watchdog_reset(void)
 {
 	/* put watchdog in service state */
-        writel(WDKEY_SEQ0, wdt_base + WDTCR);
-        /* put watchdog in active state */
-        writel(WDKEY_SEQ1, wdt_base + WDTCR);
+	writel(WDKEY_SEQ0, wdt_base + WDTCR);
+	/* put watchdog in active state */
+	writel(WDKEY_SEQ1, wdt_base + WDTCR);
 }
 
 void hw_watchdog_init(void)
@@ -73,27 +73,27 @@ void hw_watchdog_init(void)
 		heartbeat = MAX_HEARTBEAT;
 
 	/* disable, internal clock source */
-        writel(0, wdt_base + TCR);
-        /* reset timer, set mode to 64-bit watchdog, and unreset */
-        writel(0, wdt_base + TGCR);
-        tgcr = TIMMODE_64BIT_WDOG | TIM12RS_UNRESET | TIM34RS_UNRESET;
-        writel(tgcr, wdt_base + TGCR);
-        /* clear counter regs */
-        writel(0, wdt_base + TIM12);
-        writel(0, wdt_base + TIM34);
-        /* set timeout period */
-        timer_margin = (((u64)heartbeat * wdt_freq) & 0xffffffff);
-        writel(timer_margin, wdt_base + PRD12);
-        timer_margin = (((u64)heartbeat * wdt_freq) >> 32);
-        writel(timer_margin, wdt_base + PRD34);
-        /* enable run continuously */
-        writel(ENAMODE12_PERIODIC, wdt_base + TCR);
-        /* Once the WDT is in pre-active state write to
-         * TIM12, TIM34, PRD12, PRD34, TCR, TGCR, WDTCR are
-         * write protected (except for the WDKEY field)
-         */
-        /* put watchdog in pre-active state */
-        writel(WDKEY_SEQ0 | WDEN, wdt_base + WDTCR);
-        /* put watchdog in active state */
-        writel(WDKEY_SEQ1 | WDEN, wdt_base + WDTCR);
+	writel(0, wdt_base + TCR);
+	/* reset timer, set mode to 64-bit watchdog, and unreset */
+	writel(0, wdt_base + TGCR);
+	tgcr = TIMMODE_64BIT_WDOG | TIM12RS_UNRESET | TIM34RS_UNRESET;
+	writel(tgcr, wdt_base + TGCR);
+	/* clear counter regs */
+	writel(0, wdt_base + TIM12);
+	writel(0, wdt_base + TIM34);
+	/* set timeout period */
+	timer_margin = (((u64)heartbeat * wdt_freq) & 0xffffffff);
+	writel(timer_margin, wdt_base + PRD12);
+	timer_margin = (((u64)heartbeat * wdt_freq) >> 32);
+	writel(timer_margin, wdt_base + PRD34);
+	/* enable run continuously */
+	writel(ENAMODE12_PERIODIC, wdt_base + TCR);
+	/* Once the WDT is in pre-active state write to
+	 * TIM12, TIM34, PRD12, PRD34, TCR, TGCR, WDTCR are
+	 * write protected (except for the WDKEY field)
+	 */
+	/* put watchdog in pre-active state */
+	writel(WDKEY_SEQ0 | WDEN, wdt_base + WDTCR);
+	/* put watchdog in active state */
+	writel(WDKEY_SEQ1 | WDEN, wdt_base + WDTCR);
 }
