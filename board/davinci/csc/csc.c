@@ -60,8 +60,8 @@ int board_eth_init(bd_t *bis)
 	writel((readl(&gpio1_base->dir) & ~(1 << 30)), &gpio1_base->dir);
 	writel((readl(&gpio3_base->dir) & ~((1 << 1) | (1 << 0))),  &gpio3_base->dir);
 
-	/* GPIO30, 32 and 33 high */
-	writel((readl(&gpio1_base->out_data) | (1 << 30)), &gpio1_base->out_data);
+	/* GPIO30 (RST) low, GPIO32 (PWREN) and 33 (PWRDN) high */
+	writel((readl(&gpio1_base->out_data) & ~(1 << 30)), &gpio1_base->out_data);
 	writel((readl(&gpio3_base->out_data) | (1 << 0) | (1 << 1)), &gpio3_base->out_data);
 
 	/* Configure PINMUX 3 to enable EMAC pins */
@@ -85,6 +85,9 @@ int board_eth_init(bd_t *bis)
 
 	/* Configure I2C pins so that EEPROM can be read */
 	writel((readl(PINMUX3) | 0x01400000), PINMUX3);
+
+	/* GPIO30 high (release switch reset) */
+	writel((readl(&gpio1_base->out_data) | (1 << 30)), &gpio1_base->out_data);
 
 	/* Read Ethernet MAC address from EEPROM */
 	if (dvevm_read_mac_address(eeprom_enetaddr))
