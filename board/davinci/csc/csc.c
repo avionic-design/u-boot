@@ -49,6 +49,9 @@ int board_eth_init(bd_t *bis)
 	struct davinci_gpio *gpio3_base =
 			(struct davinci_gpio *)DAVINCI_GPIO_BANK23;
 
+	/* Configure PINMUX 4 to enable GPIO30, 32 and 33 */
+	writel((readl(PINMUX4) & ~((3<<6)|(3<<10)|(3<<12))), PINMUX4);
+
 	/* Disable the pull down on GPIO30, 32 and 33 */
 	writel((readl(PUPDCTL0) & ~(1<<30)), PUPDCTL0);
 	writel((readl(PUPDCTL1) & ~((1<<0)|(1<<1))), PUPDCTL1);
