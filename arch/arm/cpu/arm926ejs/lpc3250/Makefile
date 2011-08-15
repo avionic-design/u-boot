@@ -1,6 +1,6 @@
 #
-# (C) Copyright 2006
-# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+# Copyright (C) 2008 by NXP Semiconductors
+# All rights reserved.
 #
 # See file CREDITS for list of people who contributed to this
 # project.
@@ -12,7 +12,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -23,19 +23,16 @@
 
 include $(TOPDIR)/config.mk
 
-LIB	:= $(obj)libdma.o
+LIB	= $(obj)lib$(SOC).o
 
-COBJS-$(CONFIG_FSLDMAFEC) += MCD_tasksInit.o MCD_dmaApi.o MCD_tasks.o
-COBJS-$(CONFIG_FSL_DMA) += fsl_dma.o
-COBJS-$(CONFIG_SYS_LPC32XX_DMA) += lpc32xx_dma.o
+COBJS-y	+= serial.o cpu.o clkpwr.o
 
-COBJS	:= $(COBJS-y)
-SRCS	:= $(COBJS:.o=.c)
-OBJS	:= $(addprefix $(obj),$(COBJS))
+SRCS    := $(SOBJS:.o=.S) $(COBJS-y:.o=.c)
+OBJS    := $(addprefix $(obj),$(SOBJS) $(COBJS-y))
 
-all:	$(LIB)
+all:	$(obj).depend $(LIB)
 
-$(LIB):	$(obj).depend $(OBJS)
+$(LIB):	$(OBJS)
 	$(call cmd_link_o_target, $(OBJS))
 
 #########################################################################
