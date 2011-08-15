@@ -844,6 +844,13 @@ TNY_A9260_config	:	unconfig
 	@echo "#define CONFIG_$(@:_config=) 1" >$(obj)include/config.h
 	@$(MKCONFIG) -n $@ -a tny_a9260 arm arm926ejs tny_a9260 calao at91
 
+#########################################################################
+## NXP ARM926EJ-S Systems
+#########################################################################
+
+phy3250_config: unconfig
+	@$(MKCONFIG) $(@:_config=) arm arm926ejs phy3250 NULL lpc3250
+
 ########################################################################
 ## ARM Integrator boards - see doc/README-integrator for more info.
 integratorap_config	\
