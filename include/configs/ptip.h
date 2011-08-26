@@ -288,4 +288,18 @@
 
 #define CONFIG_SYS_TEXT_BASE 0x81080000
 
+/* SPL */
+#define CONFIG_SPL
+#define CONFIG_SPL_TEXT_BASE 0x00000000
+#define CONFIG_SPL_MAX_SIZE 0x8000
+
+#define CONFIG_SPL_LIBCOMMON_SUPPORT
+#define CONFIG_SPL_LIBGENERIC_SUPPORT
+#define CONFIG_SPL_SERIAL_SUPPORT
+#define CONFIG_SPL_LDSCRIPT "arch/arm/cpu/arm926ejs/lpc3250/u-boot-spl.lds"
+
+#if 0
+#define CONFIG_SPL_EARLY_DEBUG
+#endif
+
 #endif  /* __PTIP_H__*/

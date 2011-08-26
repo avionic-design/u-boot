@@ -25,7 +25,15 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(SOC).o
 
-COBJS-y	+= serial.o cpu.o clkpwr.o
+COBJS-y	+= serial.o cpu.o clkpwr.o board.o
+
+ifdef CONFIG_SPL_BUILD
+COBJS-y += spl.o
+endif
+
+ifndef CONFIG_SKIP_LOWLEVEL_INIT
+SOBJS += lowlevel_init.o
+endif
 
 SRCS    := $(SOBJS:.o=.S) $(COBJS-y:.o=.c)
 OBJS    := $(addprefix $(obj),$(SOBJS) $(COBJS-y))

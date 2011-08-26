@@ -25,9 +25,12 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(BOARD).o
 
-COBJS	:= ptip.o net.o
-COBJS	+= lowlevelsys_init.o
-SOBJS	:= lowlevel_init.o
+COBJS	:= ptip.o
+ifeq ($(CONFIG_CMD_NET),y)
+  COBJS += net.o
+endif
+#COBJS	+= lowlevelsys_init.o
+#SOBJS	:= lowlevel_init.o
 
 SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
 OBJS	:= $(addprefix $(obj),$(COBJS))
