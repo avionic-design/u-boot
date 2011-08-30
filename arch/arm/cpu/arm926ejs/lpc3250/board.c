@@ -8,14 +8,10 @@
 #include <lpc3250.h>
 #include <div64.h>
 
-#include "spl.h"
-
 DECLARE_GLOBAL_DATA_PTR;
 
-#ifdef CONFIG_SPL_BUILD
 static gd_t gdata __attribute__((section(".data")));
 static bd_t bdata __attribute__((section(".data")));
-#endif
 
 typedef enum { false, true } bool;
 
@@ -1194,11 +1190,9 @@ static void setup_memory(void)
 	writel(0x0f, &emc->stc[0].turn);
 }
 
-#ifdef CONFIG_SPL_BUILD
+#ifdef CONFIG_NAND_SPL
 void s_init(void)
 {
-	u32 value;
-
 #ifdef CONFIG_SPL_EARLY_DEBUG
 	printascii("Hello, World!\n");
 	printascii("gdata:");

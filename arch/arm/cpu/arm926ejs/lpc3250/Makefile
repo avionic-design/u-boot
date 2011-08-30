@@ -27,9 +27,6 @@ LIB	= $(obj)lib$(SOC).o
 
 COBJS-y	+= serial.o cpu.o clkpwr.o timer.o board.o
 
-ifdef CONFIG_SPL_BUILD
-COBJS-y += spl.o
-endif
 
 ifndef CONFIG_SKIP_LOWLEVEL_INIT
 SOBJS += lowlevel_init.o
