@@ -15,134 +15,50 @@ static bd_t bdata __attribute__((section(".data")));
 
 typedef enum { false, true } bool;
 
-/*
-static u32 gpio_set_gpo(u32 set, u32 clr)
-{
-	struct lpc32xx_gpio_regs *gpio = (struct lpc32xx_gpio_regs *)LPC32XX_GPIO;
-
-	if (set)
-		writel(set, &gpio->p3_out_set);
-
-	if (clr)
-		writel(clr, &gpio->p3_out_clr);
-
-	return readl(&gpio->p3_out);
-}
-
-static u32 gpio_set_p0_dir(u32 set, u32 clr)
-{
-	struct lpc32xx_gpio_regs *gpio = (struct lpc32xx_gpio_regs *)LPC32XX_GPIO;
-
-	if (set)
-		writel(set, &gpio->p0_dir_set);
-
-	if (clr)
-		writel(clr, &gpio->p0_dir_clr);
-
-	return readl(&gpio->p0_dir);
-}
-
-static u32 gpio_set_p0(u32 set, u32 clr)
-{
-	struct lpc32xx_gpio_regs *gpio = (struct lpc32xx_gpio_regs *)LPC32XX_GPIO;
-
-	if (set)
-		writel(set, &gpio->p0_out_set);
-
-	if (clr)
-		writel(clr, &gpio->p0_out_clr);
-
-	return readl(&gpio->p0_out);
-}
-*/
-
-#if 0
-#define P2_GPIO02_KEYROW6 (1 << 0)
-#define P2_GPIO03_KEYROW7 (1 << 1)
-#define P2_GPO21_U4TX (1 << 2)
-#define P2_SDRAMD19D31_GPIO (1 << 3)
-#define P2_GPIO05_SSEL0 (1 << 5)
-
-#define P_I2STXSDA1_MAT31 (1 << 2)
-#define P_I2STXCLK1_MAT30 (1 << 3)
-#define P_I2STXWS1_CAP30 (1 << 4)
-#define P_SPI2DATAIO_MOSI1 (1 << 5)
-#define P_SPI2DATAIN_MISO1 (1 << 6)
-#define P_SPI2CLK_SCK1 (1 << 8)
-#define P_SPI1DATAIO_SSP0_MOSI (1 << 9)
-#define P_SPI1DATAIN_SSP0_MISO (1 << 10)
-#define P_SPI1CLK_SCK0 (1 << 12)
-#endif
-#define P_MAT21 (1 << 13)
-#define P_MAT20 (1 << 14)
-#if 0
-#define P_U7TX_MAT11 (1 << 15)
-#endif
-#define P_MAT03 (1 << 17)
-#define P_MAT02 (1 << 18)
-#define P_MAT01 (1 << 19)
-#define P_MAT00 (1 << 20)
-
-#if 0
-#define P3_GPO2_MAT10 (1 << 2)
-#endif
-#define P3_GPO6 (1 << 6)
-#define P3_GPO8 (1 << 8)
-#define P3_GPO9 (1 << 9)
-#define P3_GPO10_MC2B (1 << 10)
-#define P3_GPO12_MC2A (1 << 12)
-#define P3_GPO13_MC1B (1 << 13)
-#define P3_GPO15_MC1A (1 << 15)
-#define P3_GPO16_MC0B (1 << 16)
-#define P3_GPO18_MC0A (1 << 17)
-
-#define P0_GPO0_I2SRXCLK1 (1 << 0)
-#define P0_GPO1_I2SRXWS1 (1 << 1)
-#if 0
-#define P0_GPO2_I2SRXSDA0 (1 << 2)
-#define P0_GPO3_I2SRXCLK0 (1 << 3)
-#define P0_GPO4_I2SRXWS0 (1 << 4)
-#define P0_GPO5_I2STXSDA0 (1 << 5)
-#define P0_GPO6_I2STXCLK0 (1 << 6)
-#define P0_GPO7_I2STXWS0 (1 << 7)
-#endif
-
-#define P2_DIR_GPIO(pin) (1 << ((pin) + 25))
-#define P3_GPO(pin) (1 << (pin))
-
 static void setup_gpio(void)
 {
-	struct lpc32xx_gpio_regs *gpio = (struct lpc32xx_gpio_regs *)LPC32XX_GPIO;
+	struct lpc32xx_gpio_regs *gpio =
+		(struct lpc32xx_gpio_regs *)LPC32XX_GPIO_BASE;
 	u32 value;
 
-	value = P2_SDRAMD19D31_GPIO | P2_GPO21_U4TX | P2_GPIO03_KEYROW7 | P2_GPIO02_KEYROW6 | P2_GPIO05_SSEL0;
+	value = P2_SDRAMD19D31_GPIO | P2_GPO21_U4TX | P2_GPIO03_KEYROW7 |
+		P2_GPIO02_KEYROW6 | P2_GPIO05_SSEL0;
 	writel(value, &gpio->p2_mux_clr);
 
 	value = P2_DIR_GPIO(5);
 	writel(value, &gpio->p2_dir_set);
 
-	value = P_I2STXSDA1_MAT31 | P_I2STXCLK1_MAT30 | P_I2STXWS1_CAP30 | P_MAT20 | P_MAT21 | P_MAT03 | P_MAT02 | P_MAT01 | P_MAT00 | P_SPI1DATAIO_SSP0_MOSI | P_SPI1DATAIN_SSP0_MISO | P_SPI1CLK_SCK0;
+	value = P_I2STXSDA1_MAT31 | P_I2STXCLK1_MAT30 | P_I2STXWS1_CAP30 |
+		P_MAT20 | P_MAT21 | P_MAT03 | P_MAT02 | P_MAT01 | P_MAT00 |
+		P_SPI1DATAIO_SSP0_MOSI | P_SPI1DATAIN_SSP0_MISO |
+		P_SPI1CLK_SCK0;
 	writel(value, &gpio->p_mux_set);
 
-	value = P_SPI2DATAIO_MOSI1 | P_SPI2DATAIN_MISO1 | P_SPI2CLK_SCK1 | P_U7TX_MAT11;
+	value = P_SPI2DATAIO_MOSI1 | P_SPI2DATAIN_MISO1 | P_SPI2CLK_SCK1 |
+		P_U7TX_MAT11;
 	writel(value, &gpio->p_mux_clr);
 
-	value = P3_GPO2_MAT10 | P3_GPO6 | P3_GPO8 | P3_GPO9 | P3_GPO10_MC2B | P3_GPO12_MC2A | P3_GPO13_MC1B | P3_GPO15_MC1A | P3_GPO16_MC0B | P3_GPO18_MC0A;
+	value = P3_GPO2_MAT10 | P3_GPO6 | P3_GPO8 | P3_GPO9 | P3_GPO10_MC2B |
+		P3_GPO12_MC2A | P3_GPO13_MC1B | P3_GPO15_MC1A |
+		P3_GPO16_MC0B | P3_GPO18_MC0A;
 	writel(value, &gpio->p3_mux_clr);
 
-	value = P0_GPOP0_I2SRXCLK1 | P0_GPOP1_I2SRXWS1 | P0_GPOP2_I2SRXSDA0 | P0_GPOP3_I2SRXCLK0 | P0_GPOP4_I2SRXWS0 | P0_GPOP5_I2STXSDA0 | P0_GPOP6_I2STXCLK0 | P0_GPOP7_I2STXWS0;
+	value = P0_GPO0_I2SRXCLK1 | P0_GPO1_I2SRXWS1 | P0_GPO2_I2SRXSDA0 |
+		P0_GPO3_I2SRXCLK0 | P0_GPO4_I2SRXWS0 | P0_GPO5_I2STXSDA0 |
+		P0_GPO6_I2STXCLK0 | P0_GPO7_I2STXWS0;
 	writel(value, &gpio->p0_mux_clr);
 
-	/* same as: gpio_set_p0_dir(P0_GPOP0_I2SRXCLK1 | P0_GPOP1_I2SRXWS1, 0); */
 	value = P0_GPO0_I2SRXCLK1 | P0_GPO1_I2SRXWS1;
 	writel(value, &gpio->p0_dir_set);
 
-	/* same as: gpio_set_p0(0, P0_GPOP0_I2SRXCLK1 | P0_GPOP1_I2SRXWS1); */
 	value = P0_GPO0_I2SRXCLK1 | P0_GPO1_I2SRXWS1;
 	writel(value, &gpio->p0_out_clr);
 
 	writel(P1_ALL, &gpio->p1_mux_clr);
 
+	/*
+	 * GPO( 4): ethernet PHY reset?
+	 */
 	value = P3_GPO(4);
 	writel(value, &gpio->p3_out_set);
 }
