@@ -25,7 +25,7 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(SOC).o
 
-COBJS-y	+= serial.o cpu.o clkpwr.o board.o
+COBJS-y	+= serial.o cpu.o clkpwr.o timer.o board.o
 
 ifdef CONFIG_SPL_BUILD
 COBJS-y += spl.o
