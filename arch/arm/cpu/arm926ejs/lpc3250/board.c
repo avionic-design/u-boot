@@ -58,8 +58,9 @@ static void setup_gpio(void)
 
 	/*
 	 * GPO( 4): ethernet PHY reset?
+	 * GPO(19): NAND flash write-protection
 	 */
-	value = P3_GPO(4);
+	value = P3_GPO(4) | P3_GPO(19);
 	writel(value, &gpio->p3_out_set);
 }
 
