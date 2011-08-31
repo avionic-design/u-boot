@@ -29,6 +29,7 @@
 #include <nand.h>
 #include <asm/errno.h>
 #include <asm/io.h>
+#include <asm/arch/dma.h>
 
 #define	NAND_ALE_OFFS	4
 #define	NAND_CLE_OFFS	8
@@ -54,7 +55,7 @@ extern int nand_correct_data(struct mtd_info *mtd, u_char *dat,
  * For Large Block: 17 descriptors = ((16 Data and ECC Read) + 1 Spare Area)
  * For Small Block: 5 descriptors = ((4 Data and ECC Read) + 1 Spare Area)
  */
-static dmac_ll_t dmalist[(CONFIG_SYS_NAND_ECCSIZE/256) * 2 + 1];
+static struct lpc32xx_dma_desc dmalist[(CONFIG_SYS_NAND_ECCSIZE/256) * 2 + 1];
 static uint32_t ecc_buffer[8]; /* MAX ECC size */
 static int dmachan = -1;
 #define XFER_PENDING ((SLCNAND->slc_stat & SLCSTAT_DMA_FIFO) | SLCNAND->slc_tc)
@@ -162,36 +163,36 @@ static void lpc32xx_nand_dma_configure(struct nand_chip *chip,
 	 * Copy Multiple times to sync DMA with Flash Controller
 	 */
 	ecc_ctrl =  (0x5 |
-			DMAC_CHAN_SRC_BURST_1 |
-			DMAC_CHAN_DEST_BURST_1 |
-			DMAC_CHAN_SRC_WIDTH_32 |
-			DMAC_CHAN_DEST_WIDTH_32 |
-			DMAC_CHAN_DEST_AHB1);
+			DMA_CTRL_SRC_BURST_1 |
+			DMA_CTRL_DEST_BURST_1 |
+			DMA_CTRL_SRC_WIDTH_32 |
+			DMA_CTRL_DEST_WIDTH_32 |
+			DMA_CTRL_DEST_AHB1);
 
 	/* CTRL descriptor entry for reading/writing Data */
 	ctrl =  64 | /* 256/4 */
-			DMAC_CHAN_SRC_BURST_4 |
-			DMAC_CHAN_DEST_BURST_4 |
-			DMAC_CHAN_SRC_WIDTH_32 |
-			DMAC_CHAN_DEST_WIDTH_32 |
-			DMAC_CHAN_DEST_AHB1;
+			DMA_CTRL_SRC_BURST_4 |
+			DMA_CTRL_DEST_BURST_4 |
+			DMA_CTRL_SRC_WIDTH_32 |
+			DMA_CTRL_DEST_WIDTH_32 |
+			DMA_CTRL_DEST_AHB1;
 
 	/* CTRL descriptor entry for reading/writing Spare Area */
 	oob_ctrl =  ((CONFIG_SYS_NAND_OOBSIZE / 4) |
-			DMAC_CHAN_SRC_BURST_4 |
-			DMAC_CHAN_DEST_BURST_4 |
-			DMAC_CHAN_SRC_WIDTH_32 |
-			DMAC_CHAN_DEST_WIDTH_32 |
-			DMAC_CHAN_DEST_AHB1);
+			DMA_CTRL_SRC_BURST_4 |
+			DMA_CTRL_DEST_BURST_4 |
+			DMA_CTRL_SRC_WIDTH_32 |
+			DMA_CTRL_DEST_WIDTH_32 |
+			DMA_CTRL_DEST_AHB1);
 
 	if (read) {
 		dmasrc = (uint32_t) (base + offsetof(SLCNAND_REGS_T, slc_dma_data));
 		dmadst = (uint32_t) (buffer);
-		ctrl |= DMAC_CHAN_DEST_AUTOINC;
+		ctrl |= DMA_CTRL_DEST_AUTOINC;
 	} else {
 		dmadst = (uint32_t) (base + offsetof(SLCNAND_REGS_T, slc_dma_data));
 		dmasrc = (uint32_t) (buffer);
-		ctrl |= DMAC_CHAN_SRC_AUTOINC;
+		ctrl |= DMA_CTRL_SRC_AUTOINC;
 	}
 
 	/*
@@ -224,21 +225,21 @@ static void lpc32xx_nand_dma_configure(struct nand_chip *chip,
 	 */
 
 	for (i = 0; i < size/256; i++) {
-		dmalist[i*2].dma_src = (read ?(dmasrc) :(dmasrc + (i*256)));
-		dmalist[i*2].dma_dest = (read ?(dmadst + (i*256)) :dmadst);
-		dmalist[i*2].next_lli = (uint32_t) & dmalist[(i*2)+1];
-		dmalist[i*2].next_ctrl = ctrl;
+		dmalist[i*2].src = (read ?(dmasrc) :(dmasrc + (i*256)));
+		dmalist[i*2].dest = (read ?(dmadst + (i*256)) :dmadst);
+		dmalist[i*2].lli = (uint32_t) & dmalist[(i*2)+1];
+		dmalist[i*2].control = ctrl;
 
-		dmalist[(i*2) + 1].dma_src = (uint32_t)
+		dmalist[(i*2) + 1].src = (uint32_t)
 		        (base + offsetof(SLCNAND_REGS_T, slc_ecc));
-		dmalist[(i*2) + 1].dma_dest =  (uint32_t) & ecc_gen[i];
-		dmalist[(i*2) + 1].next_lli = (uint32_t) & dmalist[(i*2)+2];
-		dmalist[(i*2) + 1].next_ctrl = ecc_ctrl;
+		dmalist[(i*2) + 1].dest =  (uint32_t) & ecc_gen[i];
+		dmalist[(i*2) + 1].lli = (uint32_t) & dmalist[(i*2)+2];
+		dmalist[(i*2) + 1].control = ecc_ctrl;
 	}
 
 	if (i) { /* Data only transfer */
-		dmalist[(i*2) - 1].next_lli = 0;
-		dmalist[(i*2) - 1].next_ctrl |= DMAC_CHAN_INT_TC_EN;
+		dmalist[(i*2) - 1].lli = 0;
+		dmalist[(i*2) - 1].control |= DMA_CTRL_INT_TC_EN;
 		return ;
 	}
 
@@ -246,18 +247,18 @@ static void lpc32xx_nand_dma_configure(struct nand_chip *chip,
 	if (read) {
 		dmasrc = (uint32_t) (base + offsetof(SLCNAND_REGS_T, slc_dma_data));
 		dmadst = (uint32_t) (buffer);
-		oob_ctrl |= DMAC_CHAN_DEST_AUTOINC;
+		oob_ctrl |= DMA_CTRL_DEST_AUTOINC;
 	} else {
 		dmadst = (uint32_t) (base + offsetof(SLCNAND_REGS_T, slc_dma_data));
 		dmasrc = (uint32_t) (buffer);
-		oob_ctrl |= DMAC_CHAN_SRC_AUTOINC;
+		oob_ctrl |= DMA_CTRL_SRC_AUTOINC;
 	}
 
 	/* Read/ Write Spare Area Data To/From Flash */
-	dmalist[i*2].dma_src = dmasrc;
-	dmalist[i*2].dma_dest = dmadst;
-	dmalist[i*2].next_lli = 0;
-	dmalist[i*2].next_ctrl = (oob_ctrl | DMAC_CHAN_INT_TC_EN);
+	dmalist[i*2].src = dmasrc;
+	dmalist[i*2].dest = dmadst;
+	dmalist[i*2].lli = 0;
+	dmalist[i*2].control = (oob_ctrl | DMA_CTRL_INT_TC_EN);
 }
 
 static void lpc32xx_nand_xfer(struct mtd_info *mtd, const u_char *buf, int len, int read)
@@ -266,10 +267,14 @@ static void lpc32xx_nand_xfer(struct mtd_info *mtd, const u_char *buf, int len, 
 	uint32_t config;
 
 	/* DMA Channel Configuration */
-	config = (read ? DMAC_CHAN_FLOW_D_P2M : DMAC_CHAN_FLOW_D_M2P) |
-		(read ? DMAC_DEST_PERIP(0) : DMAC_DEST_PERIP(DMA_PERID_NAND1)) |
-		(read ? DMAC_SRC_PERIP(DMA_PERID_NAND1) : DMAC_SRC_PERIP(0)) |
-		DMAC_CHAN_ENABLE;
+	if (read)
+		config = DMA_CONFIG_FLOW_P2M | DMA_CONFIG_DEST(0) |
+		         DMA_CONFIG_SRC(DMA_PERIPHERAL_NAND1);
+	else
+		config = DMA_CONFIG_FLOW_M2P | DMA_CONFIG_SRC(0) |
+		         DMA_CONFIG_DEST(DMA_PERIPHERAL_NAND1);
+
+	config |= DMA_CONFIG_ENABLE;
 
 	/* Prepare DMA descriptors */
 	lpc32xx_nand_dma_configure(chip, buf, len, read);

@@ -25,106 +25,152 @@
  */
 
 #include <common.h>
-#include <lpc3250.h>
 #include <asm/io.h>
+#include <asm/system.h>
+#include <asm/arch/clkpwr.h>
+#include <asm/arch/dma.h>
 
-
-/* Some optimization stuff */
-#ifndef unlikely
-#define likely(x)	__builtin_expect(!!(x), 1)
-#define unlikely(x)	__builtin_expect(!!(x), 0)
+#ifdef CONFIG_SPL_BUILD
+#  define printf(...) do { } while (0)
 #endif
 
-#define DMA_CLK_ENABLE      1
+#define BIT(x) (1 << (x))
+#define DMA_CLK_ENABLE 1
+
 /**********************************************************************
 * DMA controller register structures
 **********************************************************************/
-static uint32_t alloc_ch;
+
+/*
+ * WARNING: This breaks for SPL builds! The reason is that SPL builds
+ *          don't clear the BSS section, so the value of the "allocated"
+ *          variable is undefined.
+ */
+static u32 allocated = 0;
 
 int lpc32xx_dma_get_channel(void)
 {
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
+	struct lpc32xx_dma_regs *dma =
+		(struct lpc32xx_dma_regs *)LPC32XX_DMA_BASE;
+	u32 value;
 	int i;
-	uint32_t status = 0;
 
-	if (!alloc_ch) { /* First time caller */
-		CLKPWR->clkpwr_dmaclk_ctrl |= DMA_CLK_ENABLE;
-		/* Make sure DMA controller and all channels are disabled.
-		*        Controller is in little-endian mode. Disable sync signals */
-		dma_base->config = 0;
-		dma_base->sync = 0;
+#ifdef CONFIG_SPL_BUILD
+	allocated = 0;
+#endif
+
+	if (!allocated) { /* First time caller */
+		value = readl(&clkpwr->dma_clk_ctrl);
+		value |= DMA_CLK_ENABLE;
+		writel(value, &clkpwr->dma_clk_ctrl);
+
+		/*
+		 * Make sure DMA controller and all channels are disabled.
+		 * Controller is in little-endian mode. Disable sync signals.
+		 */
+		writel(0, &dma->config);
+		writel(0, &dma->sync);
 
 		/* Clear interrupt and error statuses */
-		dma_base->int_tc_clear = 0xFF;
-		dma_base->raw_tc_stat = 0xFF;
-		dma_base->int_err_clear = 0xFF;
-		dma_base->raw_err_stat = 0xFF;
+		writel(0xff, &dma->int_tc_clear);
+		//writel(0xff, &dma->raw_tc_stat);
+		writel(0xff, &dma->int_err_clear);
+		//writel(0xff, &dma->raw_err_stat);
 
 		/* Enable DMA controller */
-		dma_base->config = DMAC_CTRL_ENABLE;
+		writel(DMA_CONFIG_ENABLE, &dma->config);
 	}
 
-	for (i = 0; i < DMA_NO_OF_CHANNELS && (status & _BIT(i)); i++)
-	       ;
+	for (i = 0; i < LPC32XX_DMA_CHANNELS; i++) {
+		if ((allocated & BIT(i)) == 0)
+			break;
+	}
 
 	/* Check if all the available channles are busy */
-	if (unlikely(i == DMA_NO_OF_CHANNELS)) return -1;
-	alloc_ch |= _BIT(i);
+	if (i == LPC32XX_DMA_CHANNELS)
+		return -1;
+
+	allocated |= BIT(i);
 	return i;
 }
 
-int lpc32xx_dma_start_xfer(int channel, const dmac_ll_t *desc, uint32_t config)
+int lpc32xx_dma_start_xfer(int channel, const struct lpc32xx_dma_desc *desc,
+		u32 config)
 {
-	if (unlikely((_BIT(channel) & alloc_ch) == 0)) {
+	struct lpc32xx_dma_regs *dma =
+		(struct lpc32xx_dma_regs *)LPC32XX_DMA_BASE;
+
+	if ((allocated & BIT(channel)) == 0) {
 		printf ("ERR: Request for xfer on "
 		       "unallocated channel %d\r\n", channel);
 		BUG();
 	}
-	dma_base->int_tc_clear = _BIT(channel);
-	dma_base->int_err_clear = _BIT(channel);
-	dma_base->dma_chan[channel].src_addr = desc->dma_src;
-	dma_base->dma_chan[channel].dest_addr = desc->dma_dest;
-	dma_base->dma_chan[channel].lli = desc->next_lli;
-	dma_base->dma_chan[channel].control = desc->next_ctrl;
-	dma_base->dma_chan[channel].config_ch = config;
+
+	writel(BIT(channel), &dma->int_tc_clear);
+	writel(BIT(channel), &dma->int_err_clear);
+
+	writel(desc->src, &dma->channel[channel].src);
+	writel(desc->dest, &dma->channel[channel].dest);
+	writel(desc->lli, &dma->channel[channel].lli);
+	writel(desc->control, &dma->channel[channel].control);
+	writel(config, &dma->channel[channel].config);
 
 	return 0;
 }
 
 int lpc32xx_dma_wait_status(int channel)
 {
-	while((
-	      (dma_base->raw_tc_stat | dma_base->raw_err_stat) &
-	      _BIT(channel)) == 0
-	     ) ;
+	struct lpc32xx_dma_regs *dma =
+		(struct lpc32xx_dma_regs *)LPC32XX_DMA_BASE;
 
-	if (unlikely(dma_base->raw_err_stat & _BIT(channel))) {
-		dma_base->int_err_clear |= _BIT(channel);
-		dma_base->raw_err_stat |= _BIT(channel);
+	while (1) {
+		if ((readl(&dma->raw_err_stat) & BIT(channel)) ||
+		    (readl(&dma->raw_tc_stat) & BIT(channel)))
+			break;
+	}
+
+	if (readl(&dma->raw_err_stat) & BIT(channel)) {
+		writel(BIT(channel), &dma->int_err_clear);
 		return -1;
 	}
-	dma_base->int_tc_clear |= _BIT(channel);
-	dma_base->raw_tc_stat |= _BIT(channel);
+
+	writel(BIT(channel), &dma->int_tc_clear);
 	return 0;
 }
 
 void lpc32xx_dma_put_channel(int channel)
 {
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
+	struct lpc32xx_dma_regs *dma =
+		(struct lpc32xx_dma_regs *)LPC32XX_DMA_BASE;
+	u32 value;
+
 	/* Check if given channel no is valid */
-	if (channel >= DMA_NO_OF_CHANNELS || channel < 0)
-		return ;
-	alloc_ch &= ~_BIT(channel);
+	if ((channel < 0) || (channel >= LPC32XX_DMA_CHANNELS))
+		return;
+
+	allocated &= ~BIT(channel);
 
 	/* Shut down channel */
-	dma_base->dma_chan [channel].control = 0;
-	dma_base->dma_chan [channel].config_ch = 0;
-	dma_base->sync &= ~_BIT(channel);
+	writel(0, &dma->channel[channel].control);
+	writel(0, &dma->channel[channel].config);
 
-	if (!alloc_ch) {
+	value = readl(&dma->sync);
+	value &= ~BIT(channel);
+	writel(value, &dma->sync);
+
+	if (!allocated) {
 		/* Disable DMA controller */
-		dma_base->config &= ~DMAC_CTRL_ENABLE;
+		value = readl(&dma->config);
+		value &= ~DMA_CONFIG_ENABLE;
+		writel(value, &dma->config);
 
 		/* If all channels are free disable the clock */
-		CLKPWR->clkpwr_dmaclk_ctrl &= ~DMA_CLK_ENABLE;
+		value = readl(&clkpwr->dma_clk_ctrl);
+		value &= ~DMA_CLK_ENABLE;
+		writel(value, &clkpwr->dma_clk_ctrl);
 	}
 }
-
