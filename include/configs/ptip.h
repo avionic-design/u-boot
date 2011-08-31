@@ -177,6 +177,11 @@
 #define CONFIG_CMD_UBIFS
 */
 
+#define CONFIG_CMD_MD5SUM
+#ifdef CONFIG_CMD_MD5SUM
+#  define CONFIG_MD5
+#endif
+
 /*
  * USB Host (OHCI) Support
  */
