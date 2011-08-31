@@ -235,15 +235,16 @@
 #ifdef CONFIG_CMD_MTDPARTS
 #  define CONFIG_MTD_DEVICE	1
 #  define CONFIG_MTD_PARTITIONS	1
+
+#  define MTDIDS_DEFAULT "nand0=flash"
+#  define MTDPARTS_DEFAULT "mtdparts=flash:"				\
+	"224k(spl),32k(environment),512k(uboot),8m(uimage),-(rootfs)"
 #endif
 
 #if defined(CONFIG_CMD_UBI) || defined(CONFIG_CMD_UBIFS)
 #  define CONFIG_LZO		1
 #  define CONFIG_RBTREE		1
 #endif
-
-#define MTDIDS_DEFAULT "nand0=flash"
-#define MTDPARTS_DEFAULT "mtdparts=flash:224k(spl),32k(environment),512k(uboot),8m(uimage),-(rootfs)"
 
 /*
  * Support for various capabilities
