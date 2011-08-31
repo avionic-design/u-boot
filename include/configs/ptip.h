@@ -283,6 +283,10 @@
 /*
  * Network setup
  */
+#define CONFIG_LPC32XX_ETH	1
+#define CONFIG_NET_MULTI	1
+
+#ifdef CONFIG_LPC32XX_ETH
 #define CONFIG_NETMASK		255.255.255.0
 #define CONFIG_IPADDR		192.168.1.101
 #define CONFIG_SERVERIP		192.168.1.41
@@ -292,6 +296,16 @@
 #define CONFIG_BOOTFILE		uImage
 #define CONFIG_LOADADDR		0x80800000
 #define CONFIG_ROOTPATH		/home/user/ltib/rootfs
+
+/*
+ * BOOTP options
+ */
+#define CONFIG_BOOTP_SUBNETMASK
+#define CONFIG_BOOTP_GATEWAY
+#define CONFIG_BOOTP_BOOTPATH
+#define CONFIG_BOOTP_HOSTNAME
+#define CONFIG_BOOTP_BOOTFILESIZE
+#endif
 
 #define BOOTARGS "bootargs=console=ttyS0,115200n8\0"
 
@@ -318,15 +332,6 @@
 /* Default boot command */
 #define CONFIG_BOOTCOMMAND					\
 	"run nandboot; bootm ${loadaddr}"
-
-/*
- * BOOTP options
- */
-#define CONFIG_BOOTP_SUBNETMASK
-#define CONFIG_BOOTP_GATEWAY
-#define CONFIG_BOOTP_BOOTPATH
-#define CONFIG_BOOTP_HOSTNAME
-#define CONFIG_BOOTP_BOOTFILESIZE
 
 #ifdef CONFIG_BOOTSTRAP_BUILD
 #  define CONFIG_SYS_TEXT_BASE 0x00000000
