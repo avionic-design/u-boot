@@ -232,6 +232,7 @@ void nand_boot(void)
 	 */
 	nand_chip.select_chip = NULL;
 	nand_info.priv = &nand_chip;
+	nand_info.oobsize = CONFIG_SYS_NAND_OOBSIZE;
 	nand_chip.IO_ADDR_R = nand_chip.IO_ADDR_W = (void  __iomem *)CONFIG_SYS_NAND_BASE;
 	nand_chip.dev_ready = NULL;	/* preset to NULL */
 	nand_chip.options = 0;
