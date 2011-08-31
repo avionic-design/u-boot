@@ -69,10 +69,16 @@
 /*
  * Address and size of Environment Data
  */
-#define CONFIG_ENV_IS_IN_NAND	1
-#define CONFIG_ENV_SIZE		0x00008000 /* 2 blocks */
-#define CONFIG_ENV_OFFSET	0x00038000 /* Blocks 8/9  */
-#define CONFIG_ENV_ADDR		0x80000100 /* Passed to kernel here */
+#ifdef CONFIG_BOOTSTRAP_BUILD
+#  define CONFIG_ENV_IS_NOWHERE
+#  define CONFIG_ENV_SIZE	0x00008000 /* 2 blocks */
+#  define CONFIG_ENV_ADDR	0x80000100 /* Passed to kernel here */
+#else
+#  define CONFIG_ENV_IS_IN_NAND	1
+#  define CONFIG_ENV_SIZE	0x00008000 /* 2 blocks */
+#  define CONFIG_ENV_OFFSET	0x00038000 /* Blocks 8/9  */
+#  define CONFIG_ENV_ADDR	0x80000100 /* Passed to kernel here */
+#endif
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
