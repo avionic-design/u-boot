@@ -1130,5 +1130,18 @@ void panic(const char *fmt, ...)
 #else
 void s_init(void)
 {
+#ifdef CONFIG_BOOTSTRAP_BUILD
+	timer_init();
+
+	gd = &gdata;
+	gd->bd = &bdata;
+	gd->baudrate = 115200;
+
+	serial_init();
+
+	setup_gpio();
+	setup_clocks(CPU_CLOCK_RATE, HCLK_DIVIDER, PCLK_DIVIDER);
+	setup_memory();
+#endif
 }
 #endif

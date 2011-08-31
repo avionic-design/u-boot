@@ -27,6 +27,10 @@
 #ifndef __PTIP_H__
 #define __PTIP_H__
 
+#if 0
+#  define CONFIG_BOOTSTRAP_BUILD
+#endif
+
 /*
  * Ethernet buffer support in uncached IRAM and buffer size
  */
@@ -125,8 +129,12 @@
 /*
  * Default boot delay is 3 seconds
  */
-#define CONFIG_BOOTDELAY 3
-#define CONFIG_ZERO_BOOTDELAY_CHECK	/* check for keypress on bootdelay==0 */
+#ifdef CONFIG_BOOTSTRAP_BUILD
+#  define CONFIG_BOOTDELAY -1
+#else
+#  define CONFIG_BOOTDELAY 3
+#  define CONFIG_ZERO_BOOTDELAY_CHECK	/* check for keypress on bootdelay==0 */
+#endif
 
 /*
  * Interrupts are not supported in this boot loader
@@ -286,6 +294,10 @@
 #define CONFIG_BOOTP_HOSTNAME
 #define CONFIG_BOOTP_BOOTFILESIZE
 
-#define CONFIG_SYS_TEXT_BASE 0x81080000
+#ifdef CONFIG_BOOTSTRAP_BUILD
+#  define CONFIG_SYS_TEXT_BASE 0x00000000
+#else
+#  define CONFIG_SYS_TEXT_BASE 0x81080000
+#endif
 
 #endif  /* __PTIP_H__*/
