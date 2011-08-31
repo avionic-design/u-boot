@@ -25,8 +25,7 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(SOC).o
 
-COBJS-y	+= serial.o cpu.o clkpwr.o timer.o board.o
-
+COBJS-y	+= serial.o cpu.o clkpwr.o timer.o board.o kickstart.o
 
 ifndef CONFIG_SKIP_LOWLEVEL_INIT
 SOBJS += lowlevel_init.o
