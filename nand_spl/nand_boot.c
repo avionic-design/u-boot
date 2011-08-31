@@ -128,7 +128,7 @@ static int nand_is_bad_block(struct mtd_info *mtd, int block)
 		if (readw(this->IO_ADDR_R) != 0xffff)
 			return 1;
 	} else {
-		if (readb(this->IO_ADDR_R) != 0xff)
+		if (this->read_byte(mtd) != 0xff)
 			return 1;
 	}
 
