@@ -60,11 +60,17 @@
 #undef BBB_COMDAT_TRACE
 #undef BBB_XPORT_TRACE
 
-#ifdef	USB_STOR_DEBUG
-#define USB_STOR_PRINTF(fmt, args...)	printf(fmt , ##args)
+#ifdef USB_STOR_DEBUG
+#  define __USB_STOR_DEBUG 1
 #else
-#define USB_STOR_PRINTF(fmt, args...)
+#  define __USB_STOR_DEBUG 0
 #endif
+
+#define USB_STOR_PRINTF(fmt, args...)		\
+	do {					\
+		if (__USB_STOR_DEBUG)		\
+			printf(fmt, ##args);	\
+	} while (0)
 
 #include <scsi.h>
 /* direction table -- this indicates the direction of the data
