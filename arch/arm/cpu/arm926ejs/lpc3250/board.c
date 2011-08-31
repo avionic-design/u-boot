@@ -10,11 +10,14 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#if defined(CONFIG_BOOTSTRAP_BUILD) || defined(CONFIG_NAND_SPL)
 static gd_t gdata __attribute__((section(".data")));
 static bd_t bdata __attribute__((section(".data")));
+#endif
 
 typedef enum { false, true } bool;
 
+#if defined(CONFIG_BOOTSTRAP_BUILD) || defined(CONFIG_NAND_SPL)
 static void setup_gpio(void)
 {
 	struct lpc32xx_gpio_regs *gpio =
@@ -1084,33 +1087,6 @@ static void setup_memory(void)
 	writel(0x0f, &emc->stc[0].turn);
 }
 
-#ifdef CONFIG_NAND_SPL
-void s_init(void)
-{
-#ifdef CONFIG_SPL_EARLY_DEBUG
-	printascii("Hello, World!\n");
-	printascii("gdata:");
-	printhex(&gdata, 8);
-	printascii("\n");
-
-	printascii("bdata:");
-	printhex(&bdata, 8);
-	printascii("\n");
-#endif
-
-	timer_init();
-
-	gd = &gdata;
-	gd->bd = &bdata;
-	gd->baudrate = 115200;
-
-	serial_init();
-
-	setup_gpio();
-	setup_clocks(CPU_CLOCK_RATE, HCLK_DIVIDER, PCLK_DIVIDER);
-	setup_memory();
-}
-
 void board_init_f(ulong bootflag)
 {
 	nand_boot();
@@ -1128,10 +1104,11 @@ void panic(const char *fmt, ...)
 {
 	hang();
 }
-#else
+#endif
+
 void s_init(void)
 {
-#ifdef CONFIG_BOOTSTRAP_BUILD
+#if defined(CONFIG_BOOTSTRAP_BUILD) || defined(CONFIG_NAND_SPL)
 	timer_init();
 
 	gd = &gdata;
@@ -1145,4 +1122,3 @@ void s_init(void)
 	setup_memory();
 #endif
 }
-#endif
