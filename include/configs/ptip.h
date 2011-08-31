@@ -41,7 +41,7 @@
 /*
  * Linux machine type
  */
-#define MACH_TYPE_PTIP (4000)
+#define MACH_TYPE_PTIP (4000) /* TODO: register in ARM machine registry */
 #define MACH_TYPE_UBOOTSYS MACH_TYPE_PTIP
 
 /*

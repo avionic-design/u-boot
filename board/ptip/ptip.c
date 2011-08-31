@@ -94,11 +94,8 @@ DECLARE_GLOBAL_DATA_PTR;
  */
 int board_init(void)
 {
-	/* arch number of Logic-Board - MACH_TYPE_LPC3XXX */
-	gd->bd->bi_arch_number = MACH_TYPE_UBOOTSYS;
-
-	/* adress of boot parameters */
 	gd->bd->bi_boot_params = CONFIG_ENV_ADDR;
+	gd->bd->bi_arch_number = MACH_TYPE_PTIP;
 
 	return 0;
 }
