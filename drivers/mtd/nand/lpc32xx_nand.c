@@ -31,6 +31,10 @@
 #include <asm/io.h>
 #include <asm/arch/dma.h>
 
+#ifdef CONFIG_SPL_BUILD
+#  define printf(...) do { } while (0)
+#endif
+
 #define	NAND_ALE_OFFS	4
 #define	NAND_CLE_OFFS	8
 
