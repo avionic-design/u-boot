@@ -5,8 +5,8 @@
 #include <asm/arch/gpio.h>
 #include <asm/io.h>
 
-#include <lpc3250.h>
 #include <div64.h>
+#include <nand.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -64,7 +64,7 @@ static void setup_gpio(void)
 	writel(value, &gpio->p3_out_set);
 }
 
-struct clkpwr_hclk_pll_setup {
+struct clkpwr_pll_setup {
 	u32 analog;
 	u32 bypass;
 	u32 direct;
@@ -76,7 +76,8 @@ struct clkpwr_hclk_pll_setup {
 
 static void clkpwr_set_hclk_divs(u32 dram, u32 periph, u32 hclk)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value = 0;
 
 	switch (hclk) {
@@ -94,13 +95,15 @@ static void clkpwr_set_hclk_divs(u32 dram, u32 periph, u32 hclk)
 		break;
 	}
 
-	value = dram | CLKPWR_HCLKDIV_PCLK_DIV(periph - 1) | CLKPWR_HCLKDIV_DIV_2POW(value);
+	value = dram | CLKPWR_HCLKDIV_PCLK_DIV(periph - 1) |
+		CLKPWR_HCLKDIV_DIV_2POW(value);
 	writel(value, &clkpwr->hclk_div);
 }
 
 static void clkpwr_set_mode(enum clkpwr_mode mode)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value = readl(&clkpwr->pwr_ctrl);
 
 	switch (mode) {
@@ -125,7 +128,8 @@ static void clkpwr_set_mode(enum clkpwr_mode mode)
 
 static void clkpwr_pll_disable(enum clkpwr_pll pll)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value;
 
 	switch (pll) {
@@ -154,7 +158,8 @@ static void clkpwr_pll_disable(enum clkpwr_pll pll)
 
 static void clkpwr_mainosc_setup(u32 cap, bool enable)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value;
 
 	value = readl(&clkpwr->main_osc_ctrl);
@@ -170,7 +175,8 @@ static void clkpwr_mainosc_setup(u32 cap, bool enable)
 
 static void clkpwr_sysclk_setup(enum clkpwr_osc osc, u32 bp)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value;
 
 	value = readl(&clkpwr->sysclk_ctrl);
@@ -185,11 +191,13 @@ static void clkpwr_sysclk_setup(enum clkpwr_osc osc, u32 bp)
 
 static void clkpwr_pll397_setup(bool bypass, u32 bias, bool pll)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value;
 
 	value = readl(&clkpwr->pll397_ctrl);
-	value &= ~(CLKPWR_PLL397_CTRL_BYPASS | CLKPWR_PLL397_CTRL_BIAS_MASK | CLKPWR_PLL397_CTRL_DISABLE);
+	value &= ~(CLKPWR_PLL397_CTRL_BYPASS | CLKPWR_PLL397_CTRL_BIAS_MASK |
+			CLKPWR_PLL397_CTRL_DISABLE);
 
 	if (bypass)
 		value |= CLKPWR_PLL397_CTRL_BYPASS;
@@ -202,9 +210,10 @@ static void clkpwr_pll397_setup(bool bypass, u32 bias, bool pll)
 	writel(value, &clkpwr->pll397_ctrl);
 }
 
-static u32 clkpwr_check_pll_setup(u32 input, struct clkpwr_hclk_pll_setup *setup)
+static u32 clkpwr_check_pll_setup(u32 input, struct clkpwr_pll_setup *setup)
 {
-	u32 mode = (setup->bypass << 2) | (setup->direct << 1) | (setup->fdbk << 0);
+	u32 mode = (setup->bypass << 2) | (setup->direct << 1) |
+		(setup->fdbk << 0);
 	u64 freq = 0;
 	u64 cco = 0;
 	u64 ref = 0;
@@ -277,7 +286,8 @@ static s32 clkpwr_abs(s32 v1, s32 v2)
 	return v2 - v1;
 }
 
-static u32 clkpwr_find_pll_config(u32 input, u32 target, s32 tol, struct clkpwr_hclk_pll_setup *setup)
+static u32 clkpwr_find_pll_config(u32 input, u32 target, s32 tol,
+		struct clkpwr_pll_setup *setup)
 {
 	bool flag = false;
 	u32 clkout = 0;
@@ -412,7 +422,8 @@ static u32 hclk_divs[4] = { 1, 2, 4, 4 };
 
 static enum clkpwr_osc clkpwr_get_osc(void)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	enum clkpwr_osc ret = CLKPWR_OSC_MAIN;
 	u32 value;
 
@@ -426,9 +437,12 @@ static enum clkpwr_osc clkpwr_get_osc(void)
 
 static u32 clkpwr_pll_rate(u32 clkrate, u32 value)
 {
-	struct clkpwr_hclk_pll_setup setup;
+	struct clkpwr_pll_setup setup;
 
-	memset(&setup, 0, sizeof(setup));
+	setup.analog = 0;
+	setup.bypass = 0;
+	setup.direct = 0;
+	setup.fdbk = 0;
 
 	if (value & CLKPWR_HCLKPLL_CCO_BYPASS)
 		setup.bypass = 1;
@@ -448,7 +462,8 @@ static u32 clkpwr_pll_rate(u32 clkrate, u32 value)
 
 static u32 clkpwr_get_base_clock_rate(enum clkpwr_clk clock)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 sysclk, hclk, ddrclk, pclk, armclk;
 	u32 hclk_div = 0;
 	u32 value;
@@ -547,11 +562,13 @@ static u32 clkpwr_get_base_clock_rate(enum clkpwr_clk clock)
 	return ret;
 }
 
-static u32 clkpwr_hclkpll_setup(struct clkpwr_hclk_pll_setup *setup)
+static u32 clkpwr_hclkpll_setup(struct clkpwr_pll_setup *setup)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value = 0;
 	u32 div = 0;
+	u32 clkrate;
 
 	if (setup->analog)
 		value |= CLKPWR_HCLKPLL_POWER_UP;
@@ -592,12 +609,14 @@ static u32 clkpwr_hclkpll_setup(struct clkpwr_hclk_pll_setup *setup)
 
 	writel(value, &clkpwr->hclk_pll_ctrl);
 
-	return clkpwr_check_pll_setup(clkpwr_get_base_clock_rate(CLKPWR_SYSCLK), setup);
+	clkrate = clkpwr_get_base_clock_rate(CLKPWR_CLK_SYS);
+	return clkpwr_check_pll_setup(clkrate, setup);
 }
 
 static bool clkpwr_is_pll_locked(enum clkpwr_pll pll)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr
+		= (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	bool locked = false;
 	u32 value;
 
@@ -633,14 +652,15 @@ static bool clkpwr_is_pll_locked(enum clkpwr_pll pll)
 
 static void clkpwr_force_arm_hclk_to_pclk(bool force)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value;
 
 	value = readl(&clkpwr->pwr_ctrl);
-	value &= ~CLKPWR_CTRL_FORCE_PCLK;
+	value &= ~CLKPWR_PWR_CTRL_FORCE_PCLK;
 
 	if (force)
-		value |= CLKPWR_CTRL_FORCE_PCLK;
+		value |= CLKPWR_PWR_CTRL_FORCE_PCLK;
 
 	writel(value, &clkpwr->pwr_ctrl);
 }
@@ -651,18 +671,16 @@ static void clkpwr_force_arm_hclk_to_pclk(bool force)
 
 static void setup_clocks(u32 clkrate, u32 hdiv, u32 pdiv)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
-	struct clkpwr_hclk_pll_setup pllcfg;
-	u32 value;
+	struct clkpwr_pll_setup pllcfg;
 
 	clkpwr_set_hclk_divs(CLKPWR_HCLKDIV_DDRCLK_STOP, 1, 2);
 	clkpwr_set_mode(CLKPWR_MODE_DIRECT);
 	clkpwr_pll_disable(CLKPWR_PLL_HCLK);
-	udelay(2);
+	__udelay(2);
 
 	if (clkpwr_get_osc() == CLKPWR_OSC_PLL397) {
 		clkpwr_mainosc_setup(0, true);
-		udelay(100);
+		__udelay(100);
 
 		clkpwr_sysclk_setup(CLKPWR_OSC_MAIN, 0x50);
 		clkpwr_pll397_setup(false, 0, false);
@@ -681,8 +699,6 @@ static void setup_clocks(u32 clkrate, u32 hdiv, u32 pdiv)
 		clkpwr_force_arm_hclk_to_pclk(false);
 		clkpwr_set_mode(CLKPWR_MODE_RUN);
 	}
-
-	value = readl(&clkpwr->pwr_ctrl);
 }
 
 #define SDRAM_PERFORMANCE_MODE 1
@@ -769,8 +785,10 @@ static u32 ddr_find_config(u32 *modeshift, u32 *bankshift)
 
 static void ddr_clock_resync(u32 cfg)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
-	struct lpc32xx_emc_regs *emc = (struct lpc32xx_emc_regs *)LPC32XX_EMC;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
+	struct lpc32xx_emc_regs *emc =
+		(struct lpc32xx_emc_regs *)LPC32XX_EMC_BASE;
 	u32 value;
 
 	value = readl(&clkpwr->sdram_clk_ctrl);
@@ -787,8 +805,10 @@ static void ddr_clock_resync(u32 cfg)
 
 static void ddr_if_init(u32 cfg)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
-	struct lpc32xx_emc_regs *emc = (struct lpc32xx_emc_regs *)LPC32XX_EMC;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
+	struct lpc32xx_emc_regs *emc =
+		(struct lpc32xx_emc_regs *)LPC32XX_EMC_BASE;
 	unsigned int count = 0;
 	unsigned int i;
 	u32 value;
@@ -814,7 +834,7 @@ static void ddr_if_init(u32 cfg)
 		value &= ~CLKPWR_SDRCLK_DO_CAL;
 		writel(value, &clkpwr->sdram_clk_ctrl);
 
-		udelay(25);
+		__udelay(25);
 
 		count += readl(&clkpwr->ddr_lap_count);
 	}
@@ -836,45 +856,11 @@ static void ddr_if_init(u32 cfg)
 	writel(value, &emc->dyn_read_cfg);
 
 	value = readl(&clkpwr->sdram_clk_ctrl);
-	value &= ~(CLKPWR_SDRCLK_SLOWSLEW_CLK | CLKPWR_SDRCLK_SLOWSLEW | CLKPWR_SDRCLK_SLOWSLEW_DAT);
+	value &= ~(CLKPWR_SDRCLK_SLOWSLEW_CLK | CLKPWR_SDRCLK_SLOWSLEW |
+			CLKPWR_SDRCLK_SLOWSLEW_DAT);
 	writel(value, &clkpwr->sdram_clk_ctrl);
 }
 
-#if 0
-#define SDRAM_TRP 2
-#define SDRAM_TRAS 23809523
-#define SDRAM_TSREX 519750
-#define SDRAM_TWR 2
-#define SDRAM_TRC 7
-#define SDRAM_TRFC 13888888
-#define SDRAM_TXSR 13333333
-#define SDRAM_TRRD 2
-#define SDRAM_TMRD 2
-#define SDRAM_TCDLR 2
-
-#define TRP(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0xf) : ((n) - 1))
-#define TRAS(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0xf) : ((n) - 1))
-#define TSREX(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0x7f) : ((n) - 1))
-#define TWR(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0xf) : ((n) - 1))
-#define TRC(n) \
-	((n) & 0x1f)
-#define TRFC(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0x1f) : ((n) - 1))
-#define TXSR(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0x7f) : ((n) - 1))
-#define TRRD(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0xf) : ((n) - 1))
-#define TRRD(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0xf) : ((n) - 1))
-#define TMRD(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0xf) : ((n) - 1))
-#define TCDLR(n) \
-	(((n) > 15) ? ((clkrate / (n)) & 0xf) : ((n) - 1))
-#else
 #define SDRAM_TRP 1
 #define SDRAM_TRAS 4
 #define SDRAM_TSREX 0x48
@@ -896,11 +882,11 @@ static void ddr_if_init(u32 cfg)
 #define TRRD(n) ((n) & 0xf)
 #define TMRD(n) ((n) & 0xf)
 #define TCDLR(n) ((n) & 0xf)
-#endif
 
 static void ddr_adjust_timing(unsigned int clkrate)
 {
-	struct lpc32xx_emc_regs *emc = (struct lpc32xx_emc_regs *)LPC32XX_EMC;
+	struct lpc32xx_emc_regs *emc =
+		(struct lpc32xx_emc_regs *)LPC32XX_EMC_BASE;
 
 	writel(TRP(SDRAM_TRP), &emc->dyn_trp);
 	writel(TRAS(SDRAM_TRAS), &emc->dyn_tras);
@@ -919,17 +905,16 @@ static const u8 dqs2calsen[32] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0
 };
 
-#define CLKPWR_SDRCLK_SENS_FACT(n) (((n) & 0x7) << 10)
-#define CLKPWR_SDRCLK_DQS_DLY(n)   (((n) & 0x1F) << 2)
-
 static void dqsin_ddr_mod(u32 delay)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value;
 
 	value = readl(&clkpwr->sdram_clk_ctrl);
 	value &= ~(CLKPWR_SDRCLK_SENS_FACT(7) | CLKPWR_SDRCLK_DQS_DLY(0x1f));
-	value |= CLKPWR_SDRCLK_DQS_DLY(delay) | CLKPWR_SDRCLK_SENS_FACT(dqs2calsen[delay]);
+	value |= CLKPWR_SDRCLK_DQS_DLY(delay);
+	value |= CLKPWR_SDRCLK_SENS_FACT(dqs2calsen[delay]);
 	writel(value, &clkpwr->sdram_clk_ctrl);
 }
 
@@ -991,22 +976,12 @@ static int ddr_find_dqsin_delay(unsigned long base, unsigned long size)
 	return good;
 }
 
-#define EMC_STC_BLS_EN (1 << 7)
-#define EMC_STC_MEMWIDTH_16 1
-
-#define EMC_DYN_CLKEN_ALWAYS_ON (1 << 0)
-#define EMC_DYN_CLK_ALWAYS_ON (1 << 1)
-#define EMC_DYN_DIS_MEMCLK_IN_SFRSH (1 << 3)
-#define EMC_DYN_REFRESH_IVAL(n) (((n) >> 4) & 0x7ff)
-#define EMC_DYN_NORMAL_MODE 0x000
-#define EMC_DYN_CMD_MODE 0x080
-#define EMC_DYN_PALL_MODE 0x100
-#define EMC_DYN_NOP_MODE 0x180
-
 static void ddr_st_setup(unsigned int clkrate)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
-	struct lpc32xx_emc_regs *emc = (struct lpc32xx_emc_regs *)LPC32XX_EMC;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
+	struct lpc32xx_emc_regs *emc =
+		(struct lpc32xx_emc_regs *)LPC32XX_EMC_BASE;
 	u32 modeshift = 0;
 	u32 bankshift = 0;
 	u32 value;
@@ -1033,35 +1008,35 @@ static void ddr_st_setup(unsigned int clkrate)
 
 	/* nop mode */
 	writel(value | EMC_DYN_NOP_MODE, &emc->dyn_control);
-	udelay(200);
+	__udelay(200);
 
 	/* precharge all command */
 	writel(value | EMC_DYN_PALL_MODE, &emc->dyn_control);
 	writel(EMC_DYN_REFRESH_IVAL(4), &emc->dyn_refresh);
-	udelay(10);
+	__udelay(10);
 
 	/* cmd mode */
 	writel(value | EMC_DYN_CMD_MODE, &emc->dyn_control);
 
 	word = readw(0x80000000 + (SDRAM_EXT_MODE_WORD << modeshift) + SDRAM_EXT_MODE_BB);
-	udelay(1);
+	__udelay(1);
 
 	word = readw(0x80000000 + (((2 << 7) + SDRAM_MODE_WORD) << modeshift));
-	udelay(1);
+	__udelay(1);
 
 	/* precharge all command */
 	writel(value | EMC_DYN_PALL_MODE, &emc->dyn_control);
-	udelay(10);
-	udelay(25);
+	__udelay(10);
+	__udelay(25);
 
 	writel(EMC_DYN_REFRESH_IVAL(clkrate / SDRAM_REFRESH_INTERVAL), &emc->dyn_refresh);
 
 	writel(value | EMC_DYN_CMD_MODE, &emc->dyn_control);
 	word = readw(0x80000000 + (SDRAM_MODE_WORD << modeshift));
-	udelay(1);
+	__udelay(1);
 
 	writel(EMC_DYN_NORMAL_MODE | EMC_DYN_DIS_MEMCLK_IN_SFRSH, &emc->dyn_control);
-	udelay(10);
+	__udelay(10);
 
 	ddr_find_dqsin_delay(0x80000000, 64 << 20);
 
@@ -1074,8 +1049,10 @@ static void ddr_st_setup(unsigned int clkrate)
 
 static void setup_memory(void)
 {
-	struct lpc32xx_clkpwr_regs *clkpwr = (struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR;
-	struct lpc32xx_emc_regs *emc = (struct lpc32xx_emc_regs *)LPC32XX_EMC;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
+	struct lpc32xx_emc_regs *emc =
+		(struct lpc32xx_emc_regs *)LPC32XX_EMC_BASE;
 	unsigned int rate;
 
 	writel(1, &clkpwr->bootmap);
@@ -1085,7 +1062,7 @@ static void setup_memory(void)
 	writel(0, &emc->config);
 	writel(0x7ff, &emc->dyn_refresh);
 
-	rate = sys_get_rate(CLKPWR_DDR_CLK);
+	rate = sys_get_rate(CLKPWR_CLK_DDR);
 
 	ddr_st_setup(rate);
 
@@ -1128,13 +1105,27 @@ void s_init(void)
 	gd->baudrate = 115200;
 
 	serial_init();
-	serial_puts("Hello, World\r\n");
 
 	setup_gpio();
 	setup_clocks(CPU_CLOCK_RATE, HCLK_DIVIDER, PCLK_DIVIDER);
 	setup_memory();
+}
 
-	while (1);
+void board_init_f(ulong bootflag)
+{
+}
+
+void hang(void)
+{
+	serial_puts("### ERROR ### Please RESET the board ###\r\n");
+
+	while (1)
+		;
+}
+
+void panic(const char *fmt, ...)
+{
+	hang();
 }
 #else
 void s_init(void)

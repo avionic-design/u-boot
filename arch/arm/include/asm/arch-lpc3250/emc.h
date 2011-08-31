@@ -3,7 +3,7 @@
 
 #include <asm/types.h>
 
-#define LPC32XX_EMC	0x31080000
+#define LPC32XX_EMC_BASE 0x31080000
 
 struct lpc32xx_emc_static_regs {
 	u32 config;
@@ -60,5 +60,17 @@ struct lpc32xx_emc_regs {
 };
 
 #define EMC_CONTROL_DYN_SDRAM_CTRL_EN (1 << 0)
+
+#define EMC_STC_BLS_EN (1 << 7)
+#define EMC_STC_MEMWIDTH_16 1
+
+#define EMC_DYN_CLKEN_ALWAYS_ON (1 << 0)
+#define EMC_DYN_CLK_ALWAYS_ON (1 << 1)
+#define EMC_DYN_DIS_MEMCLK_IN_SFRSH (1 << 3)
+#define EMC_DYN_REFRESH_IVAL(n) (((n) >> 4) & 0x7ff)
+#define EMC_DYN_NORMAL_MODE 0x000
+#define EMC_DYN_CMD_MODE 0x080
+#define EMC_DYN_PALL_MODE 0x100
+#define EMC_DYN_NOP_MODE 0x180
 
 #endif /* LPC32XX_EMC_H */

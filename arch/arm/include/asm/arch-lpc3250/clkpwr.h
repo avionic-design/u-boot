@@ -3,7 +3,7 @@
 
 #include <asm/types.h>
 
-#define LPC32XX_CLKPWR	0x40004000
+#define LPC32XX_CLKPWR_BASE 0x40004000
 
 struct lpc32xx_clkpwr_regs {
 	u32 reserved1[5];
@@ -59,6 +59,44 @@ struct lpc32xx_clkpwr_regs {
 	u32 auto_clk;
 };
 
+#define MAIN_OSC_FREQ 13000000
+#define CLOCK_OSC_FREQ 32768
+
+#define CLKPWR_SDRCLK_USE_DDR (1 << 1)
+#define CLKPWR_SDRCLK_DQS_DLY(n) (((n) & 0x1f) << 2)
+#define CLKPWR_SDRCLK_CAL_ON_RTC (1 << 7)
+#define CLKPWR_SDRCLK_DO_CAL (1 << 8)
+#define CLKPWR_SDRCLK_USE_CAL (1 << 9)
+#define CLKPWR_SDRCLK_SENS_FACT(n) (((n) & 0x7) << 10)
+#define CLKPWR_SDRCLK_HCLK_DLY(n) (((n) & 0x1f) << 14)
+#define CLKPWR_SDRCLK_SW_DDR_RESET (1 << 19)
+
+#define CLKPWR_STOP_MODE_CTRL (1 << 0)
+#define CLKPWR_SELECT_RUN_MODE (1 << 2)
+
+#define CLKPWR_SYSCTRL_SYSCLKMUX (1 << 0)
+#define CLKPWR_SYSCTRL_USEPLL397 (1 << 1)
+#define CLKPWR_SYSCTRL_BP_TRIG(n) (((n) & 0x3ff) << 2)
+#define CLKPWR_SYSCTRL_BP_MASK (0x3ff << 2)
+
+#define CLKPWR_HCLKPLL_PLL_STS (1 << 0)
+#define CLKPWR_HCLKPLL_PLLM(n) (((n) & 0xff) << 1)
+#define CLKPWR_HCLKPLL_PREDIV_PLUS1(n) (((n) & 0x3) << 9)
+#define CLKPWR_HCLKPLL_POSTDIV_2POW(n) (((n) & 0x3) << 11)
+#define CLKPWR_HCLKPLL_FDBK_SEL_FCLK (1 << 13)
+#define CLKPWR_HCLKPLL_POSTDIV_BYPASS (1 << 14)
+#define CLKPWR_HCLKPLL_CCO_BYPASS (1 << 15)
+#define CLKPWR_HCLKPLL_POWER_UP (1 << 16)
+
+#define CLKPWR_USBCTRL_PLL_STS (1 << 0)
+#define CLKPWR_USBCTRL_PLL_PWRUP (1 << 16)
+
+#define CLKPWR_HCLKDIV_DIV_2POW(n) ((n) & 0x3)
+#define CLKPWR_HCLKDIV_PCLK_DIV(n) (((n) & 0x1f) << 2)
+#define CLKPWR_HCLKDIV_DDRCLK_STOP (0x0 << 7)
+#define CLKPWR_HCLKDIV_DDRCLK_NORM (0x1 << 7)
+#define CLKPWR_HCLKDIV_DDRCLK_HALF (0x2 << 7)
+
 #define CLKPWR_MOSC_CTRL_DISABLE (1 << 0)
 #define CLKPWR_MOSC_CTRL_CAP_MASK (0x7f << 2)
 #define CLKPWR_MOSC_CTRL_CAP(n) (((n) & 0x7f) << 2)
@@ -69,6 +107,10 @@ struct lpc32xx_clkpwr_regs {
 #define CLKPWR_PLL397_CTRL_BIAS_MASK 0x1c0
 
 #define CLKPWR_PWR_CTRL_FORCE_PCLK (1 << 10)
+
+#define CLKPWR_NAND_CLK_CTRL_SLC_ENABLE (1 << 0)
+#define CLKPWR_NAND_CLK_CTRL_MLC_ENABLE (1 << 1)
+#define CLKPWR_NAND_CLK_CTRL_SLC_SELECT (1 << 2)
 
 enum clkpwr_mode {
 	CLKPWR_MODE_RUN,
@@ -99,5 +141,7 @@ enum clkpwr_clk {
 	CLKPWR_CLK_DDR,
 	CLKPWR_CLK_MSSD,
 };
+
+unsigned int sys_get_rate(enum clkpwr_clk clock);
 
 #endif /* LPC32XX_CLKPWR_H */
