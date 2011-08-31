@@ -288,5 +288,4 @@
 
 #define CONFIG_SYS_TEXT_BASE 0x81080000
 
-
 #endif  /* __PTIP_H__*/
