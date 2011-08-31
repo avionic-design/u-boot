@@ -1,0 +1,86 @@
+Avionic Design PT-IP
+====================
+
+The PT-IP (and LPC3250 in general) is can be bootstrapped using the service
+boot procedure. The "LPC3250 User Manual" (UM10326) has a good description in
+Chapter 35, "LPC32x0 Boot process". Basically, the ROM bootloader (called the
+"bootstrap") of the SoC can receive a bootloader via UART5, load it into IRAM,
+map IRAM to address 0x00000000 and execute the code at this address.
+
+The manual says that the bootstrap uses some of the IRAM for stack and that if
+the bootloader exceeds 56 KiB it will corrupt the stack and not work properly.
+In practice, this has turned out to be not much of a problem. Sometimes it can
+happen that an uploaded bootloader doesn't run properly and this could be an
+explanation. An equally good explanation could be that the serial line is not
+very clean and corrupts the upload. If you ever run across this behaviour, try
+bootstrapping again.
+
+Obviously uploading a bootloader via UART5 is not acceptable for production
+units. In the normal boot procedure, the LPC3250 will try to load code from
+several locations. In case of the PT-IP the only valid source is NAND flash.
+Since a small page NAND is used, the bootloader can have a maximum size of 1
+block minus one page, which totals to 15.5 KiB. U-Boot provides a special
+build option, called "nand-spl", that basically builds only the bare
+necessities to get the code to initialize the SoC/board and load something
+from the NAND into SDRAM. Let's call this tiny bootloader the "kickstart".
+
+So the normal boot procedure executes the bootstrap, which loads and executes
+the kickstart. The kickstart sets up the GPIO controller, clock manager and
+SDRAM and loads the final U-Boot into SDRAM and executes it. U-Boot itself
+will later relocate to the top-of-memory.
+
+So we need two variants of U-Boot, the kickstart (nand-spl) and normal U-Boot.
+Both can be built using the normal U-Boot build-process:
+
+	$ make O=build/ptip ptip_defconfig
+	$ make O=build/ptip
+	$ make O=build/ptip nand_spl
+
+Note that you probably need to specify the path to you're cross-compiler by
+passing the prefix in the CROSS_COMPILE variable to make.
+
+In addition, a "bootstrap" variant of U-Boot can be built. This is usually
+uploaded via UART5 using the service boot and is required for boards that have
+not been flashed with a kickstart and standard U-Boot yet.
+
+For this bootstrap build, uncomment the "CONFIG_BOOTSTRAP_BUILD" entry in the
+PT-IP configuration file (include/configs/ptip.h) and run the normal build
+process:
+
+	$ make O=build/ptip-bootstrap ptip_defconfig
+	$ make O=build/ptip-bootstrap
+
+Then upload the resulting u-boot.bin in the build directory to the PT-IP as
+explained in the LPC3250 User Manual. In summary, this means that you open the
+serial port on the host and wait for the PT-IP to send a '5' character. You
+reply by sending 'A'. The device will acknowledge with a '5' again, upon which
+you are supposed to send 'U' followed by '3', which will be acknowledged by
+the device with an 'R'. After that, you send 4 bytes containing the load
+address (with least significant byte first), followed by 4 bytes containing
+the size of the data (also with the least significant byte first), followed by
+the data itself. If all goes well U-Boot should start running and you should
+see some output on the serial line.
+
+Once you have the bootstrap U-Boot running, you can upload the kickstart using
+the "loady" command (minicom can do ymodem transfers) and burn the image into
+the NAND flash with the "kick" command:
+
+	uboot> kick update ${loadaddr} SIZE
+
+Where SIZE is the size in bytes of the uploaded kickstart image. You also need
+to upload the standard U-Boot image and write it to the NAND flash by
+executing the following:
+
+	uboot> run update_uboot
+
+update_uboot is a custom command which erases the area of the NAND reserved
+for U-Boot and burns the uploaded image.
+
+After these steps, the board should be able to load from NAND flash
+autonomously. You can then proceed to uploading a Linux kernel and initial
+ramdisk, typically in uImage format and burn that into NAND by executing:
+
+	uboot> run update_uimage
+
+The standard U-Boot will automatically load this uImage after a boot delay
+of 3 seconds.
