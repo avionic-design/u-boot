@@ -1113,6 +1113,7 @@ void s_init(void)
 
 void board_init_f(ulong bootflag)
 {
+	nand_boot();
 }
 
 void hang(void)
