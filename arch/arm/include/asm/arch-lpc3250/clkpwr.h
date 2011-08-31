@@ -36,7 +36,7 @@ struct lpc32xx_clkpwr_regs {
 	u32 i2s_clk_ctrl;
 	u32 ms_ctrl;
 	u32 reserved4[3];
-	u32 macclk_ctrl;
+	u32 mac_ctrl;
 	u32 reserved5[4];
 	u32 test_clk_sel;
 	u32 sw_int;
@@ -111,6 +111,13 @@ struct lpc32xx_clkpwr_regs {
 #define CLKPWR_NAND_CLK_CTRL_SLC_ENABLE (1 << 0)
 #define CLKPWR_NAND_CLK_CTRL_MLC_ENABLE (1 << 1)
 #define CLKPWR_NAND_CLK_CTRL_SLC_SELECT (1 << 2)
+
+#define CLKPWR_MAC_CTRL_HRCCLK_EN (1 << 0)
+#define CLKPWR_MAC_CTRL_MMIOCLK_EN (1 << 1)
+#define CLKPWR_MAC_CTRL_DMACLK_EN (1 << 2)
+#define CLKPWR_MAC_CTRL_PINS_NONE 0x00
+#define CLKPWR_MAC_CTRL_PINS_MII 0x08
+#define CLKPWR_MAC_CTRL_PINS_RMII 0x18
 
 enum clkpwr_mode {
 	CLKPWR_MODE_RUN,
