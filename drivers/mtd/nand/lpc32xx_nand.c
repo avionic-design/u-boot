@@ -38,14 +38,12 @@
 #define NAND_SMALL_BLOCK_PAGE_SIZE	512
 
 static struct nand_ecclayout lpc32xx_nand_oob_16 = {
-        .eccbytes = 6,
-        .eccpos = {10, 11, 12, 13, 14, 15},
-        .oobfree = {
-                {.offset = 0,
-                 . length = 4},
-                {.offset = 6,
-                 . length = 4}
-		}
+	.eccbytes = 6,
+	.eccpos = CONFIG_SYS_NAND_ECCPOS,
+	.oobfree = {
+		{ .offset = 0, .length = 4 },
+		{ .offset = 6, .length = 4 },
+	}
 };
 
 extern int nand_correct_data(struct mtd_info *mtd, u_char *dat,
