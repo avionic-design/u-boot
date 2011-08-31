@@ -42,7 +42,7 @@ int serial_abs(int v1, int v2)
  */
 void serial_getdiv(u32 baudrate, unsigned int *xdiv, unsigned int *ydiv)
 {
-	unsigned int clkrate, savedclkrate, diff, basepclk;
+	unsigned int clkrate, diff, basepclk;
 	int idxx, idyy;
 
 	/* Get the clock rate for the UART block */
@@ -50,7 +50,6 @@ void serial_getdiv(u32 baudrate, unsigned int *xdiv, unsigned int *ydiv)
 
 	/* Find the best divider */
 	*xdiv = *ydiv = 0;
-	savedclkrate = 0;
 	diff = 0xFFFFFFFF;
 
 	for (idxx = 1; idxx < 0xFF; idxx++) {
@@ -58,7 +57,6 @@ void serial_getdiv(u32 baudrate, unsigned int *xdiv, unsigned int *ydiv)
 			clkrate = (basepclk * idxx) / idyy;
 			if (serial_abs(clkrate, baudrate) < diff) {
 				diff = serial_abs(clkrate, baudrate);
-				savedclkrate = clkrate;
 				*xdiv = idxx;
 				*ydiv = idyy;
 			}
