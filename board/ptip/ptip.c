@@ -28,7 +28,7 @@
 #include <configs/ptip.h>
 #include <asm/mach-types.h>
 #include <lpc3250.h>
-#include <net.h>
+#include <netdev.h>
 #include "ptip_prv.h"
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -296,3 +296,10 @@ int usb_board_init_fail(void)
 
 	return 0;
 }
+
+#if defined(CONFIG_NET_MULTI) && defined(CONFIG_LPC32XX_ETH)
+int board_eth_init(bd_t *bis)
+{
+	return lpc32xx_eth_initialize(bis);
+}
+#endif
