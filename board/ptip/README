@@ -32,7 +32,7 @@ will later relocate to the top-of-memory.
 So we need two variants of U-Boot, the kickstart (nand-spl) and normal U-Boot.
 Both can be built using the normal U-Boot build-process:
 
-	$ make O=build/ptip ptip_defconfig
+	$ make O=build/ptip ptip_config
 	$ make O=build/ptip
 	$ make O=build/ptip nand_spl
 
@@ -41,13 +41,10 @@ passing the prefix in the CROSS_COMPILE variable to make.
 
 In addition, a "bootstrap" variant of U-Boot can be built. This is usually
 uploaded via UART5 using the service boot and is required for boards that have
-not been flashed with a kickstart and standard U-Boot yet.
+not been flashed with a kickstart and standard U-Boot yet. You can use the
+following alternative configuration to build this variant:
 
-For this bootstrap build, uncomment the "CONFIG_BOOTSTRAP_BUILD" entry in the
-PT-IP configuration file (include/configs/ptip.h) and run the normal build
-process:
-
-	$ make O=build/ptip-bootstrap ptip_defconfig
+	$ make O=build/ptip-bootstrap ptip_bootstrap_config
 	$ make O=build/ptip-bootstrap
 
 Then upload the resulting u-boot.bin in the build directory to the PT-IP as
