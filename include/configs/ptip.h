@@ -27,10 +27,6 @@
 #ifndef __PTIP_H__
 #define __PTIP_H__
 
-#if 0
-#  define CONFIG_BOOTSTRAP_BUILD
-#endif
-
 /*
  * Ethernet buffer support in uncached IRAM and buffer size
  */
@@ -332,11 +328,5 @@
 /* Default boot command */
 #define CONFIG_BOOTCOMMAND					\
 	"run nandboot; bootm ${loadaddr}"
-
-#ifdef CONFIG_BOOTSTRAP_BUILD
-#  define CONFIG_SYS_TEXT_BASE 0x00000000
-#else
-#  define CONFIG_SYS_TEXT_BASE 0x81080000
-#endif
 
 #endif  /* __PTIP_H__*/
