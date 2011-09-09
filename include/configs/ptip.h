@@ -261,7 +261,7 @@
 
 #  define MTDIDS_DEFAULT "nand0=flash"
 #  define MTDPARTS_DEFAULT "mtdparts=flash:"				\
-	"224k(spl),32k(environment),512k(uboot),8m(uimage),-(rootfs)"
+	"224k(kickstart),32k(environment),512k(uboot),8m(uimage),-(rootfs)"
 #endif
 
 #if defined(CONFIG_CMD_UBI) || defined(CONFIG_CMD_UBIFS)
@@ -306,15 +306,15 @@
 #define BOOTARGS "bootargs=console=ttyS0,115200n8\0"
 
 #define BOOT_NAND "nandboot="					\
-	"nand read ${loadaddr} 0x00080000 0x00800000\0"
+	"nand read ${loadaddr} 0x000c0000 0x00800000\0"
 
 #define UPDATE_UBOOT "update_uboot="				\
-	"nand erase 0x00040000 0x00040000;"			\
-	"nand write ${loadaddr} 0x00040000 0x00040000;\0"
+	"nand erase 0x00040000 0x00080000;"			\
+	"nand write ${loadaddr} 0x00040000 0x00080000;\0"
 
 #define UPDATE_UIMAGE "update_uimage="				\
-	"nand erase 0x00080000 0x00800000;"			\
-	"nand write ${loadaddr} 0x00080000 0x00800000;\0"
+	"nand erase 0x000c0000 0x00800000;"			\
+	"nand write ${loadaddr} 0x000c0000 0x00800000;\0"
 
 /*
  * Other preset environment variables and example bootargs string
