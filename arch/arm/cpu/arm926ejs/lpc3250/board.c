@@ -1087,6 +1087,7 @@ static void setup_memory(void)
 	writel(0x0f, &emc->stc[0].turn);
 }
 
+#if defined(CONFIG_NAND_SPL)
 void board_init_f(ulong bootflag)
 {
 	nand_boot();
@@ -1104,6 +1105,7 @@ void panic(const char *fmt, ...)
 {
 	hang();
 }
+#endif
 #endif
 
 void s_init(void)
