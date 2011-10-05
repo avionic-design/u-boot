@@ -37,8 +37,7 @@
 /*
  * Linux machine type
  */
-#define MACH_TYPE_PTIP (4000) /* TODO: register in ARM machine registry */
-#define MACH_TYPE_UBOOTSYS MACH_TYPE_PTIP
+#define MACH_TYPE_UBOOTSYS CONFIG_PTIP_MACH_TYPE
 
 /*
  * System UART selection, valid selections include UART3, UART4,

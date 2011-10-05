@@ -95,7 +95,7 @@ DECLARE_GLOBAL_DATA_PTR;
 int board_init(void)
 {
 	gd->bd->bi_boot_params = CONFIG_ENV_ADDR;
-	gd->bd->bi_arch_number = MACH_TYPE_PTIP;
+	gd->bd->bi_arch_number = CONFIG_PTIP_MACH_TYPE;
 
 	return 0;
 }
