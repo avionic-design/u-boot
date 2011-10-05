@@ -1042,6 +1042,7 @@ static void ddr_st_setup(unsigned int clkrate)
 	__udelay(10);
 
 	ddr_find_dqsin_delay(0x80000000, 64 << 20);
+	__udelay(20); /* Needed delay for system not to hang sporadically */
 
 	value = readl(&clkpwr->sdram_clk_ctrl);
 	value |= CLKPWR_SDRCLK_USE_CAL;
