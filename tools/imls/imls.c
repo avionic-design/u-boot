@@ -27,7 +27,6 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <asm/page.h>
 
 #ifdef MTD_OLD
 #include <stdint.h>
@@ -43,6 +42,9 @@
 #include <fdt_support.h>
 #include <image.h>
 
+#ifndef PAGE_SIZE
+#define PAGE_SIZE 4096
+#endif
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 extern unsigned long crc32(unsigned long crc, const char *buf, unsigned int len);
