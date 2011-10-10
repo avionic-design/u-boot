@@ -1086,7 +1086,7 @@ int fw_env_open(void)
 	if (addr0 == NULL) {
 		fprintf (stderr,
 			"Not enough memory for environment (%ld bytes)\n",
-			CONFIG_ENV_SIZE);
+			(long)CONFIG_ENV_SIZE);
 		return -1;
 	}
 
@@ -1125,7 +1125,7 @@ int fw_env_open(void)
 		if (addr1 == NULL) {
 			fprintf (stderr,
 				"Not enough memory for environment (%ld bytes)\n",
-				CONFIG_ENV_SIZE);
+				(long)CONFIG_ENV_SIZE);
 			return -1;
 		}
 		redundant = addr1;
