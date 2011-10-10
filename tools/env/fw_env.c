@@ -79,7 +79,9 @@ static int dev_current;
 #define ENVSECTORS(i) envdevices[(i)].env_sectors
 #define DEVTYPE(i)    envdevices[(i)].mtd_type
 
+#ifndef CONFIG_ENV_SIZE
 #define CONFIG_ENV_SIZE ENVSIZE(dev_current)
+#endif
 
 #define ENV_SIZE      getenvsize()
 
