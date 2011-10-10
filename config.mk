@@ -102,6 +102,14 @@ endif
 HOSTCFLAGS_NOPED = $(filter-out -pedantic,$(HOSTCFLAGS))
 HOSTCFLAGS	+= -pedantic
 
+
+#########################################################################
+
+BINCFLAGS	= -Wall -Wstrict-prototypes -O2 -fomit-frame-pointer \
+		  $(BINCPPFLAGS) $(if $(SYSROOT),--sysroot $(SYSROOT))
+
+BINLDFLAGS	=
+
 #########################################################################
 #
 # Option checker (courtesy linux kernel) to ensure
