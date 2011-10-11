@@ -42,6 +42,7 @@ $(obj)fw_printenv:	$(BINSRCS) $(HEADERS)
 	$(CC) $(BINCFLAGS) $(BINLDFLAGS) -o $@ $(filter %.c,$^)
 
 $(obj)fw_setenv: $(obj)fw_printenv
+	rm -f $@
 	ln -s $(<F) $@
 
 clean:
