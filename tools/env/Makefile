@@ -30,7 +30,7 @@ HEADERS	:= fw_env.h
 BINCPPFLAGS   = -idirafter $(SRCTREE)/include \
 		-idirafter $(OBJTREE)/include2 \
 		-idirafter $(OBJTREE)/include \
-		-DUSE_HOSTCC
+		-DUSE_HOSTCC -g3
 
 ifeq ($(MTD_VERSION),old)
 BINCPPFLAGS += -DMTD_OLD
