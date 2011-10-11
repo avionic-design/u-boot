@@ -302,7 +302,27 @@
 #define CONFIG_BOOTP_BOOTFILESIZE
 #endif
 
-#define BOOTARGS "bootargs=console=ttyS0,115200n8\0"
+#define ADD_ETHADDR "add-ethaddr="				\
+	"set bootargs ${bootargs} ethaddr=${ethaddr}\0"
+
+#define ADD_MTD_ROOT "add-mtd-root="				\
+	"set bootargs ${bootargs} root=${mtdroot} rootfstype=${mtdfstype}\0"
+
+#define ADD_NFS_ROOT "add-nfs-root="				\
+	"set bootargs ${bootargs} root=/dev/nfs nfsroot=${serverip}:${rootpath} ip=dhcp\0"
+
+#define COMMON_BOOTARGS "common-bootargs="			\
+	"console=ttyS0,115200n8 init=/init ro\0"
+
+#define SET_BOOTARGS "set-bootargs="				\
+	"set bootargs ${common-bootargs} ; run add-ethaddr add-${roottype}-root\0"
+
+#define BOOT_CONFIG						\
+	"mtdroot=/dev/mtdblock4\0"				\
+	"mtdfstype=squashfs\0"					\
+	"boottype=nand\0"					\
+	"roottype=mtd\0"					\
+	""
 
 #define BOOT_NAND "nandboot="					\
 	"nand read ${loadaddr} 0x000c0000 0x00800000\0"
@@ -315,17 +335,32 @@
 	"nand erase 0x000c0000 0x00800000;"			\
 	"nand write ${loadaddr} 0x000c0000 0x00800000;\0"
 
+#define UPDATE_ROOTFS1 "update_rootfs1="			\
+	"nand erase 0x008c0000 0x016a0000;"			\
+	"nand write ${loadaddr} 0x008c0000 0x016a0000;\0"
+
+#define UPDATE_ROOTFS2 "update_rootfs2="			\
+	"nand erase 0x01f60000 0x016a0000;"			\
+	"nand write ${loadaddr} 0x01f60000 0x016a0000;\0"
+
 /*
  * Other preset environment variables and example bootargs string
  */
 #define CONFIG_EXTRA_ENV_SETTINGS				\
-	BOOTARGS						\
+	ADD_ETHADDR						\
+	ADD_MTD_ROOT						\
+	ADD_NFS_ROOT						\
+	COMMON_BOOTARGS						\
+	SET_BOOTARGS						\
+	BOOT_CONFIG						\
 	BOOT_NAND						\
 	UPDATE_UBOOT						\
-	UPDATE_UIMAGE
+	UPDATE_UIMAGE						\
+	UPDATE_ROOTFS1						\
+	UPDATE_ROOTFS2						\
 
 /* Default boot command */
 #define CONFIG_BOOTCOMMAND					\
-	"run nandboot; bootm ${loadaddr}"
+	"run set-bootargs ${boottype}boot; bootm ${loadaddr}"
 
 #endif  /* __PTIP_H__*/
