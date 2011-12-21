@@ -17,6 +17,36 @@ static bd_t bdata __attribute__((section(".data")));
 
 typedef enum { false, true } bool;
 
+//TODO: fix this hack with appropriate macros
+#define PTIP_CLASSIC_HW_REV	1
+#define PTIP_CLASSIC_PLATFORM
+
+#if (defined(PTIP_CLASSIC_PLATFORM) && (PTIP_CLASSIC_HW_REV > 1))
+#define PTIP_CLASSIC_SETUP_RT_BL
+#endif
+
+#if defined(PTIP_CLASSIC_SETUP_RT_BL)
+static void setup_rt_bl(void)
+{
+	struct lpc32xx_gpio_regs *gpio =
+		(struct lpc32xx_gpio_regs *)LPC32XX_GPIO_BASE;
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
+	u32 value;
+
+	/*********** Boot-up settings for RT/BL ***********/
+	/* Disable test clock output to GPO_00 */
+	value = readl(&clkpwr->test_clk_sel);
+	value &= ~CLKPWR_TEST_CLK_OUTPUT_EN;
+	writel(value, &clkpwr->test_clk_sel);
+	/* Set GPIO_00 (BL_active) as output */
+	writel(P2_DIR_GPIO(0), &gpio->p2_dir_set);
+	/* Set both outputs to high level */
+	writel(P3_GPO(0) | P2_DIR_GPIO(0), &gpio->p3_out_set);
+
+}
+#endif
+
 #if defined(CONFIG_BOOTSTRAP_BUILD) || defined(CONFIG_NAND_SPL)
 static void setup_gpio(void)
 {
@@ -1112,6 +1142,10 @@ void panic(const char *fmt, ...)
 void s_init(void)
 {
 #if defined(CONFIG_BOOTSTRAP_BUILD) || defined(CONFIG_NAND_SPL)
+
+#if defined(PTIP_CLASSIC_SETUP_RT_BL)
+	setup_rt_bl();
+#endif
 	timer_init();
 
 	gd = &gdata;
@@ -1119,7 +1153,6 @@ void s_init(void)
 	gd->baudrate = 115200;
 
 	serial_init();
-
 	setup_gpio();
 	setup_clocks(CPU_CLOCK_RATE, HCLK_DIVIDER, PCLK_DIVIDER);
 	setup_memory();

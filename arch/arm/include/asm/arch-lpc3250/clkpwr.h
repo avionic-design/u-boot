@@ -119,6 +119,8 @@ struct lpc32xx_clkpwr_regs {
 #define CLKPWR_MAC_CTRL_PINS_MII 0x08
 #define CLKPWR_MAC_CTRL_PINS_RMII 0x18
 
+#define CLKPWR_TEST_CLK_OUTPUT_EN (1<<4)
+
 enum clkpwr_mode {
 	CLKPWR_MODE_RUN,
 	CLKPWR_MODE_DIRECT,
