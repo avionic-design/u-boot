@@ -17,11 +17,7 @@ static bd_t bdata __attribute__((section(".data")));
 
 typedef enum { false, true } bool;
 
-//TODO: fix this hack with appropriate macros
-#define PTIP_CLASSIC_HW_REV	1
-#define PTIP_CLASSIC_PLATFORM
-
-#if (defined(PTIP_CLASSIC_PLATFORM) && (PTIP_CLASSIC_HW_REV > 1))
+#if CONFIG_PTIP_MACH_TYPE == MACH_TYPE_PTIP_CLASSIC
 #define PTIP_CLASSIC_SETUP_RT_BL
 #endif
 
