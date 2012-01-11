@@ -35,10 +35,10 @@ static void setup_rt_bl(void)
 	value = readl(&clkpwr->test_clk_sel);
 	value &= ~CLKPWR_TEST_CLK_OUTPUT_EN;
 	writel(value, &clkpwr->test_clk_sel);
+	/* Set all outputs to high level */
+	writel(P3_GPO(0) | P3_GPO(21) | P2_DIR_GPIO(0), &gpio->p3_out_set);
 	/* Set GPIO_00 (BL_active) as output */
 	writel(P2_DIR_GPIO(0), &gpio->p2_dir_set);
-	/* Set both outputs to high level */
-	writel(P3_GPO(0) | P2_DIR_GPIO(0), &gpio->p3_out_set);
 
 }
 #endif
