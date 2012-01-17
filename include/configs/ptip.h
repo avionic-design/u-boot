@@ -27,6 +27,8 @@
 #ifndef __PTIP_H__
 #define __PTIP_H__
 
+#include <asm/mach-types.h>
+
 /*
  * Ethernet buffer support in uncached IRAM and buffer size
  */
@@ -259,8 +261,19 @@
 #  define CONFIG_MTD_PARTITIONS	1
 
 #  define MTDIDS_DEFAULT "nand0=flash"
+
+#if CONFIG_PTIP_MACH_TYPE == MACH_TYPE_PTIP_MURNAU
 #  define MTDPARTS_DEFAULT "mtdparts=flash:"				\
-	"224k(kickstart),32k(environment),512k(uboot),8m(uimage),-(rootfs)"
+	"224k(kickstart),32k(environment),512k(uboot),"			\
+	"8m(uimage),"							\
+	"23168k(rootfs1),23168k(rootfs2),-(persist)"
+#else
+#  define MTDPARTS_DEFAULT "mtdparts=flash:"				\
+	"224k(kickstart),32k(environment),512k(uboot),"			\
+	"4m(uimage1),4m(uimage2),"					\
+	"23168k(rootfs1),23168k(rootfs2),-(persist)"
+#endif
+
 #endif
 
 #if defined(CONFIG_CMD_UBI) || defined(CONFIG_CMD_UBIFS)
@@ -331,9 +344,18 @@
 	"nand erase 0x00040000 0x00080000;"			\
 	"nand write ${loadaddr} 0x00040000 0x00080000;\0"
 
+#if CONFIG_PTIP_MACH_TYPE == MACH_TYPE_PTIP_MURNAU
 #define UPDATE_UIMAGE "update_uimage="				\
 	"nand erase 0x000c0000 0x00800000;"			\
 	"nand write ${loadaddr} 0x000c0000 0x00800000;\0"
+#else
+#define UPDATE_UIMAGE "update_uimage1="				\
+	"nand erase 0x000c0000 0x00400000;"			\
+	"nand write ${loadaddr} 0x000c0000 0x00400000;\0"	\
+		"update_uimage2="				\
+	"nand erase 0x004c0000 0x00400000;"			\
+	"nand write ${loadaddr} 0x004c0000 0x00400000;\0"
+#endif
 
 #define UPDATE_ROOTFS1 "update_rootfs1="			\
 	"nand erase 0x008c0000 0x016a0000;"			\
