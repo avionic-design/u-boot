@@ -321,21 +321,28 @@ static int do_kickstart(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 
 	if (strcmp(argv[1], "update") == 0) {
 		char *env_addr = getenv("loadaddr");
+		char *env_size = getenv("filesize");
 		unsigned long size = 16384;
 		unsigned long addr;
 
 		if (argc >= 3)
 			env_addr = argv[2];
 
+		if (argc >= 4)
+			env_size = argv[3];
+
 		if (!env_addr) {
 			printf("no address specified\n");
 			return 1;
 		}
 
-		addr = simple_strtoul(env_addr, NULL, 16);
+		if (!env_size) {
+			printf("no size specified\n");
+			return 1;
+		}
 
-		if (argc >= 4)
-			size = simple_strtoul(argv[3], NULL, 0);
+		addr = simple_strtoul(env_addr, NULL, 16);
+		size = simple_strtoul(env_size, NULL, 16);
 
 		printf("burning kickstart from %#08lx (%lu bytes)\n",
 				addr, size);
@@ -359,7 +366,7 @@ static int do_kickstart(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[]
 		addr = simple_strtoul(env_addr, NULL, 16);
 
 		if (argc >= 4)
-			size = simple_strtoul(argv[3], NULL, 0);
+			size = simple_strtoul(argv[3], NULL, 16);
 
 		printf("loading kickstart from NAND to address %#08lx (%lu "
 				"bytes)...\n", addr, size);
