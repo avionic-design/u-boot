@@ -398,8 +398,8 @@
 /* Update stuff */
 #define UPDATE_ENV \
     "updateable-vars="							\
-        "kernel-from "							\
-        "serverip rootpath\0"						\
+        "kernel-from mtdroot "						\
+        "roottype serverip rootpath\0"					\
     "get-next-value="							\
         "next_var=next-$var ; "						\
         "setenv -set-next-value next_value=\\\\$\\\\{$next_var\\\\} ; "	\
