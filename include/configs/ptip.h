@@ -57,6 +57,8 @@
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_SDRAM_BASE + 0x1000 - GENERATED_GBL_DATA_SIZE)
 
+/* Default kernel loading method: nand1 or nand2 */
+#define BOOT_LOADK_DEFAULT_MODE		"nand1"
 
 /*
  * NOR FLASH not supported
@@ -269,11 +271,13 @@
 	"224k(kickstart),32k(environment),512k(uboot),"			\
 	"8m(uimage),"							\
 	"23168k(rootfs1),23168k(rootfs2),-(persist)"
+#define NAND_BOOT_DEFAULT_DEV "/dev/mtdblock4"
 #else
 #  define MTDPARTS_DEFAULT "mtdparts=flash:"				\
 	"224k(kickstart),32k(environment),512k(uboot),"			\
 	"4m(uimage1),4m(uimage2),"					\
 	"23168k(rootfs1),23168k(rootfs2),-(persist)"
+#define NAND_BOOT_DEFAULT_DEV "/dev/mtdblock5"
 #endif
 
 #endif
@@ -326,21 +330,24 @@
 #define ADD_NFS_ROOT "add-nfs-root="				\
 	"set bootargs ${bootargs} root=/dev/nfs nfsroot=${serverip}:${rootpath} ip=dhcp\0"
 
+#define ADD_KERNEL_INFO "add-kernel-info="			\
+	"set bootargs ${bootargs} "				\
+	"u-boot.kernel-from=${kfound}\0"			\
+
 #define COMMON_BOOTARGS "common-bootargs="			\
 	"console=ttyS0,115200n8 init=/init ro\0"
 
 #define SET_BOOTARGS "set-bootargs="				\
-	"set bootargs ${common-bootargs} ; run add-ethaddr add-${roottype}-root\0"
+	"set bootargs ${common-bootargs} ; "			\
+	"run add-ethaddr add-${roottype}-root add-kernel-info ;\0"\
 
 #define BOOT_CONFIG						\
-	"mtdroot=/dev/mtdblock4\0"				\
-	"mtdfstype=squashfs\0"					\
+	"mtdroot="NAND_BOOT_DEFAULT_DEV"\0"			\
+	"mtdfstype=jffs2\0"					\
 	"boottype=nand\0"					\
 	"roottype=mtd\0"					\
+	"kernel-from="BOOT_LOADK_DEFAULT_MODE"\0"		\
 	""
-
-#define BOOT_NAND "nandboot="					\
-	"nand read ${loadaddr} 0x000c0000 0x00800000\0"
 
 #define UPDATE_UBOOT "update_uboot="				\
 	"nand erase 0x00040000 0x00080000;"			\
@@ -367,6 +374,54 @@
 	"nand erase 0x01f60000 0x016a0000;"			\
 	"nand write ${loadaddr} 0x01f60000 0x016a0000;\0"
 
+/* Various method to load a kernel in memory */
+#define LOAD_KERNEL_ENV \
+    "loadk=kfound=; "							\
+        "for kfrom in ${kernel-from} ; do "				\
+            "if test \"x$kfound\" = \"x\" ; then "			\
+                "run loadk-$kfrom && kfound=$kfrom ; "			\
+            "fi ; "							\
+        "done ; "							\
+        "if test \"x$kfound\" = \"x\" ; then "				\
+            "echo Failed to load kernel! ; "				\
+            "reset ; "							\
+        "fi ; "								\
+        "true\0"							\
+    "loadk-nand1=nboot nand0,3\0"					\
+    "loadk-nand2=nboot nand0,4\0"					\
+
+/* MTD stuff */
+#define MTD_ENV \
+    "mtdids="MTDIDS_DEFAULT"\0"						\
+    "mtdparts="MTDPARTS_DEFAULT"\0"					\
+
+/* Update stuff */
+#define UPDATE_ENV \
+    "updateable-vars="							\
+        "kernel-from "							\
+        "serverip rootpath\0"						\
+    "get-next-value="							\
+        "next_var=next-$var ; "						\
+        "setenv -set-next-value next_value=\\\\$\\\\{$next_var\\\\} ; "	\
+        "run -set-next-value ; "					\
+        "setenv -set-next-value\0"					\
+    "apply-updates="							\
+       "setenv -apply-var-updates ; "					\
+       "for var in ${updateable-vars} ; do "				\
+           "run get-next-value ; "					\
+           "if test \"x$next_value\" != \"x\" ; then ; "		\
+               "setenv ${next_var} ; "					\
+               "setenv -apply-var-updates ${-apply-var-updates} \\\\; "	\
+                                     "setenv ${var} ${next_value} ; "	\
+           "fi ; "							\
+       "done ; "							\
+       "if test \"x${-apply-var-updates}\" != \"x\" ; then ; "		\
+           "saveenv ; "							\
+           "run -apply-var-updates ; "					\
+           "setenv -apply-var-updates ; "				\
+       "fi ; "								\
+       "true"								\
+
 /*
  * Other preset environment variables and example bootargs string
  */
@@ -374,17 +429,19 @@
 	ADD_ETHADDR						\
 	ADD_MTD_ROOT						\
 	ADD_NFS_ROOT						\
+	ADD_KERNEL_INFO						\
 	COMMON_BOOTARGS						\
 	SET_BOOTARGS						\
 	BOOT_CONFIG						\
-	BOOT_NAND						\
 	UPDATE_UBOOT						\
 	UPDATE_UIMAGE						\
 	UPDATE_ROOTFS1						\
 	UPDATE_ROOTFS2						\
+	LOAD_KERNEL_ENV						\
+	MTD_ENV							\
+	UPDATE_ENV						\
 
 /* Default boot command */
-#define CONFIG_BOOTCOMMAND					\
-	"run set-bootargs ${boottype}boot; bootm ${loadaddr}"
+#define CONFIG_BOOTCOMMAND	"run apply-updates loadk set-bootargs ; bootm"
 
 #endif  /* __PTIP_H__*/
