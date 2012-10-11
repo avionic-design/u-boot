@@ -122,6 +122,12 @@
 #define CONFIG_INITRD_TAG		1
 
 /*
+ * New uImage support with device tree
+ */
+#define CONFIG_FIT			1
+#define CONFIG_OF_LIBFDT		1
+
+/*
  * Default baud rate and baud rate table, console config
  */
 #define CONFIG_CONS_INDEX	   1
