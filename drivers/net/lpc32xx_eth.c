@@ -288,8 +288,17 @@ static int lpc32xx_eth_recv(struct eth_device *dev)
 
 static int lpc32xx_eth_setup_addr(struct eth_device *dev)
 {
+	struct lpc32xx_clkpwr_regs *clkpwr =
+		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	struct lpc32xx_eth_regs *eth =
 		(struct lpc32xx_eth_regs *)LPC32XX_ETH_BASE;
+
+	/* Make sure the clocks are enabled */
+	writel(readl(&clkpwr->mac_ctrl) |
+	       CLKPWR_MAC_CTRL_HRCCLK_EN |
+	       CLKPWR_MAC_CTRL_MMIOCLK_EN |
+	       CLKPWR_MAC_CTRL_DMACLK_EN,
+	       &clkpwr->mac_ctrl);
 
 	writel((dev->enetaddr[1] << 8) | dev->enetaddr[0], &eth->sa[2]);
 	writel((dev->enetaddr[3] << 8) | dev->enetaddr[2], &eth->sa[1]);
