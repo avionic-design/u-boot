@@ -29,14 +29,29 @@ static void setup_rt_bl(void)
 	struct lpc32xx_clkpwr_regs *clkpwr =
 		(struct lpc32xx_clkpwr_regs *)LPC32XX_CLKPWR_BASE;
 	u32 value;
+	int hw_version = 0;
+
+	/* Read the HW version (GPI16/17/28) */
+	value = readl(&gpio->p3_in);
+	hw_version = ((value >> 16) & 1) | ((value >> (17-1)) & 2) | ((value >> (28-2)) & 4);
+	/* Older HW without version pins show as all high */
+	if (hw_version == 7)
+		hw_version = -1;
 
 	/*********** Boot-up settings for RT/BL ***********/
 	/* Disable test clock output to GPO_00 */
 	value = readl(&clkpwr->test_clk_sel);
 	value &= ~CLKPWR_TEST_CLK_OUTPUT_EN;
 	writel(value, &clkpwr->test_clk_sel);
-	/* Set all outputs to high level */
-	writel(P3_GPO(0) | P3_GPO(21) | P2_DIR_GPIO(0), &gpio->p3_out_set);
+	/* Set GPO_21/U4_TX and GPIO_0 to high */
+	value = P3_GPO(21) | P2_DIR_GPIO(0);
+	/* On HW before version 1 set GPO_0 high */
+	if (hw_version < 1)
+		value |= P3_GPO(0);
+	writel(value, &gpio->p3_out_set);
+	/* On HW starting with version 1 set GPO_0 low */
+	if (hw_version >= 1)
+		writel(P3_GPO(0), &gpio->p3_out_clr);
 	/* Set GPIO_00 (BL_active) as output */
 	writel(P2_DIR_GPIO(0), &gpio->p2_dir_set);
 
