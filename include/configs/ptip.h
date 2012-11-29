@@ -451,6 +451,6 @@
 	UPDATE_ENV						\
 
 /* Default boot command */
-#define CONFIG_BOOTCOMMAND	"run apply-updates loadk set-bootargs ; bootm"
+#define CONFIG_BOOTCOMMAND	"run apply-updates loadk set-bootargs ; bootm \\\\\"#config@${hwversion}\\\\\""
 
 #endif  /* __PTIP_H__*/
