@@ -27,6 +27,8 @@
 #include <common.h>
 #include <configs/ptip.h>
 #include <asm/mach-types.h>
+#include <asm/arch/gpio.h>
+#include <asm/io.h>
 #include <lpc3250.h>
 #include <netdev.h>
 #include "ptip_prv.h"
@@ -96,6 +98,27 @@ int board_init(void)
 {
 	gd->bd->bi_boot_params = CONFIG_ENV_ADDR;
 	gd->bd->bi_arch_number = CONFIG_PTIP_MACH_TYPE;
+
+	return 0;
+}
+
+/* Read the HW version  from GPI16/17/28 */
+int ptip_get_hw_version(void)
+{
+	struct lpc32xx_gpio_regs *gpio =
+		(struct lpc32xx_gpio_regs *)LPC32XX_GPIO_BASE;
+	u32 value = readl(&gpio->p3_in);
+	return ((value >> 16) & 1) | ((value >> (17-1)) & 2) | ((value >> (28-2)) & 4);
+}
+
+
+int board_late_init(void)
+{
+	char version_str[32];
+	int version = ptip_get_hw_version();
+
+	sprintf(version_str, "%d", version);
+	setenv("hwversion", version_str);
 
 	return 0;
 }
