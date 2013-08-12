@@ -94,11 +94,11 @@ void power_init_board(void)
 	gpio_direction_output(GPIO_PI4, 0);
 
 	/* Disable the PCIe power */
-	gpio_request(GPIO_PI4, "EN_3V3_PEX_HVDD");
+	gpio_request(GPIO_PT3, "EN_3V3_PEX_HVDD");
 	gpio_direction_output(GPIO_PT3, 0);
 
 	/* Disable the SATA power */
-	gpio_request(GPIO_PI4, "EN_3V3_SATA_HVDD");
+	gpio_request(GPIO_PK3, "EN_3V3_SATA_HVDD");
 	gpio_direction_output(GPIO_PK3, 0);
 
 	/* Disable LDO1 for PCIe and SATA */
