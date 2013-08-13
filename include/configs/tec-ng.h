@@ -89,6 +89,8 @@
 #define CONFIG_CMDLINE_TAG
 #define CONFIG_SETUP_MEMORY_TAGS
 #define CONFIG_INITRD_TAG
+/* support the new (FDT-based) image format */
+#define CONFIG_FIT
 
 #include "tegra-common-post.h"
 
