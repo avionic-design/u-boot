@@ -124,7 +124,7 @@ void board_sdmmc_voltage_init(void)
 	pmu_write(PMU_REG_LDO5, PMU_LDO5(HIGH_POWER, 3300));
 
 	/* Switch the power on */
-	gpio_request(GPIO_PV2, "EN_3V3_EMMC");
+	gpio_request(GPIO_PJ2, "EN_3V3_EMMC");
 	gpio_direction_output(GPIO_PJ2, 1);
 }
 
