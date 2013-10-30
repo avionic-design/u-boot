@@ -149,6 +149,20 @@ void t114_init_clocks(void)
 	clock_set_enable(PERIPH_ID_EMC1, 1);
 	clock_set_enable(PERIPH_ID_MC1, 1);
 	clock_set_enable(PERIPH_ID_DVFS, 1);
+	/* HACK for audio - must enable all toys under AHUB! */
+	clock_set_enable(PERIPH_ID_AUDIO, 1);
+	clock_set_enable(PERIPH_ID_APBIF, 1);
+	clock_set_enable(PERIPH_ID_I2S0, 1);
+	clock_set_enable(PERIPH_ID_I2S1, 1);
+	clock_set_enable(PERIPH_ID_I2S2, 1);
+	clock_set_enable(PERIPH_ID_I2S3, 1);
+	clock_set_enable(PERIPH_ID_I2S4, 1);
+	clock_set_enable(PERIPH_ID_DAM0, 1);
+	clock_set_enable(PERIPH_ID_DAM1, 1);
+	clock_set_enable(PERIPH_ID_DAM2, 1);
+	clock_set_enable(PERIPH_ID_AMX0, 1);
+	clock_set_enable(PERIPH_ID_ADX0, 1);
+	clock_set_enable(PERIPH_ID_SPDIF, 1);
 
 	/*
 	 * Set MSELECT clock source as PLLP (00), and ask for a clock
@@ -180,6 +194,20 @@ void t114_init_clocks(void)
 	reset_set_enable(PERIPH_ID_EMC1, 0);
 	reset_set_enable(PERIPH_ID_MC1, 0);
 	reset_set_enable(PERIPH_ID_DVFS, 0);
+	/* HACK for audio */
+	reset_set_enable(PERIPH_ID_AUDIO, 0);
+	reset_set_enable(PERIPH_ID_APBIF, 0);
+	reset_set_enable(PERIPH_ID_I2S0, 0);
+	reset_set_enable(PERIPH_ID_I2S1, 0);
+	reset_set_enable(PERIPH_ID_I2S2, 0);
+	reset_set_enable(PERIPH_ID_I2S3, 0);
+	reset_set_enable(PERIPH_ID_I2S4, 0);
+	reset_set_enable(PERIPH_ID_DAM0, 0);
+	reset_set_enable(PERIPH_ID_DAM1, 0);
+	reset_set_enable(PERIPH_ID_DAM2, 0);
+	reset_set_enable(PERIPH_ID_AMX0, 0);
+	reset_set_enable(PERIPH_ID_ADX0, 0);
+	reset_set_enable(PERIPH_ID_SPDIF, 0);
 
 	debug("%s exit\n", __func__);
 }

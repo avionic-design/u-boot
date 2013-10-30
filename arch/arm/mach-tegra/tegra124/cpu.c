@@ -157,6 +157,28 @@ void tegra124_init_clocks(void)
 	clock_set_enable(PERIPH_ID_CORESIGHT, 1);
 	clock_set_enable(PERIPH_ID_MSELECT, 1);
 	clock_set_enable(PERIPH_ID_DVFS, 1);
+	/* HACK for audio - must enable all toys under AHUB! */
+	clock_set_enable(PERIPH_ID_AUDIO, 1);
+	clock_set_enable(PERIPH_ID_APBIF, 1);
+	clock_set_enable(PERIPH_ID_I2S0, 1);
+	clock_set_enable(PERIPH_ID_I2S1, 1);
+	clock_set_enable(PERIPH_ID_I2S2, 1);
+	clock_set_enable(PERIPH_ID_I2S3, 1);
+	clock_set_enable(PERIPH_ID_I2S4, 1);
+	clock_set_enable(PERIPH_ID_DAM0, 1);
+	clock_set_enable(PERIPH_ID_DAM1, 1);
+	clock_set_enable(PERIPH_ID_DAM2, 1);
+	clock_set_enable(PERIPH_ID_AMX0, 1);
+	clock_set_enable(PERIPH_ID_ADX0, 1);
+	clock_set_enable(PERIPH_ID_SPDIF, 1);
+	/*
+	 * Hack this for T124, as these PERIPH_IDs are in the X regs,
+	 * which isn't working right yet in the clock_set_ code.
+	 * TODO(twarren@nvidia.com): Fix clock_set_enable for X bits.
+	 */
+	val = readl(&clkrst->crc_clk_out_enb_x);
+	val |= (1 << 25) | (1 << 20);	/* enable AMX1, ADX1 */
+	writel(val, &clkrst->crc_clk_out_enb_x);
 
 	/*
 	 * Set MSELECT clock source as PLLP (00), and ask for a clock
@@ -188,6 +210,31 @@ void tegra124_init_clocks(void)
 	reset_set_enable(PERIPH_ID_CORESIGHT, 0);
 	reset_set_enable(PERIPH_ID_MSELECT, 0);
 	reset_set_enable(PERIPH_ID_DVFS, 0);
+	/* HACK for audio */
+	reset_set_enable(PERIPH_ID_AUDIO, 0);
+	reset_set_enable(PERIPH_ID_APBIF, 0);
+	reset_set_enable(PERIPH_ID_I2S0, 0);
+	reset_set_enable(PERIPH_ID_I2S1, 0);
+	reset_set_enable(PERIPH_ID_I2S2, 0);
+	reset_set_enable(PERIPH_ID_I2S3, 0);
+	reset_set_enable(PERIPH_ID_I2S4, 0);
+	reset_set_enable(PERIPH_ID_DAM0, 0);
+	reset_set_enable(PERIPH_ID_DAM1, 0);
+	reset_set_enable(PERIPH_ID_DAM2, 0);
+	reset_set_enable(PERIPH_ID_AMX0, 0);
+	reset_set_enable(PERIPH_ID_AMX1, 0);
+	reset_set_enable(PERIPH_ID_ADX0, 0);
+	reset_set_enable(PERIPH_ID_ADX1, 0);
+	reset_set_enable(PERIPH_ID_SPDIF, 0);
+	/*
+	 * Hack this for T124, as these PERIPH_IDs are in the X regs,
+	 * which isn't working right yet in the reset_set_ code.
+	 * TODO(twarren@nvidia.com): Fix reset_set_enable for X bits.
+	 */
+	val = readl(&clkrst->crc_rst_devices_x);
+	/* clear reset for AFC0-5, AMX1, and ADX1 */
+	val &= ~((0xFC << 24) | (1 << 25) | (1 << 20));
+	writel(val, &clkrst->crc_rst_devices_x);
 
 	debug("%s exit\n", __func__);
 }
