@@ -1,0 +1,214 @@
+/*
+ * i2s.h - Definitions for Tegra114 I2S driver
+ *
+ * Copyright (c) 2011-2013, NVIDIA CORPORATION.  All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef __TEGRA_I2S_H__
+#define __TEGRA_I2S_H__
+
+/* I2S controller (NV_PA_I2S*_BASE) regs */
+struct i2s_reg {
+	uint i2s_ctrl;			/* I2S_CTRL_0, 0x00 */
+	uint i2s_timing;		/* I2S_TIMING_0, 0x04 */
+	uint i2s_offset;		/* I2S_OFFSET_0, 0x08 */
+	uint i2s_ch_ctrl;		/* I2S_CH_CTRL_0, 0x0C */
+	uint i2s_slot_ctrl;		/* I2S_SLOT_CTRL_0, 0x10 */
+	uint i2s_cif_tx_ctrl;		/* I2S_CIF_TX_CTRL_0, 0x14 */
+	uint i2s_cif_rx_ctrl;		/* I2S_CIF_RX_CTRL_0, 0x18 */
+	uint i2s_flowctl;		/* I2S_FLOWCTL_0, 0x1C */
+	uint i2s_tx_step;		/* I2S_TX_STEP_0, 0x20 */
+	uint i2s_flow_status;		/* I2S_FLOW_STATUS_0, 0x24 */
+	uint i2s_flow_total;		/* I2S_FLOW_TOTAL_0, 0x28 */
+	uint i2s_flow_over;		/* I2S_FLOW_OVER_0, 0x2C */
+	uint i2s_flow_under;		/* I2S_FLOW_UNDER_0, 0x30 */
+	uint i2s_reserved[12];		/* RESERVED, 0x34 - 0x60 */
+	uint i2s_slot_ctrl2;		/* I2S_SLOT_CTRL2_0, 0x64*/
+};
+
+/* Fields in I2S_CTRL */
+
+#define I2S_CTRL_XFER_EN_TX			(1 << 31)
+#define I2S_CTRL_XFER_EN_RX			(1 << 30)
+#define I2S_CTRL_CG_EN				(1 << 29)
+#define I2S_CTRL_SOFT_RESET			(1 << 28)
+#define I2S_CTRL_TX_FLOWCTL_EN			(1 << 27)
+
+#define I2S_CTRL_OBS_SEL_SHIFT			24
+#define I2S_CTRL_OBS_SEL_MASK			(7 << I2S_CTRL_OBS_SEL_SHIFT)
+
+#define I2S_FRAME_FORMAT_LRCK			0
+#define I2S_FRAME_FORMAT_FSYNC			1
+
+#define I2S_CTRL_FRAME_FORMAT_SHIFT		12
+#define I2S_CTRL_FRAME_FORMAT_MASK		(7 << I2S_CTRL_FRAME_FORMAT_SHIFT)
+#define I2S_CTRL_FRAME_FORMAT_LRCK		(I2S_FRAME_FORMAT_LRCK  << I2S_CTRL_FRAME_FORMAT_SHIFT)
+#define I2S_CTRL_FRAME_FORMAT_FSYNC		(I2S_FRAME_FORMAT_FSYNC << I2S_CTRL_FRAME_FORMAT_SHIFT)
+
+#define I2S_CTRL_MASTER_ENABLE			(1 << 10)
+
+#define I2S_LRCK_LEFT_LOW			0
+#define I2S_LRCK_RIGHT_LOW			1
+
+#define I2S_CTRL_LRCK_SHIFT			9
+#define I2S_CTRL_LRCK_MASK			(1 << I2S_CTRL_LRCK_SHIFT)
+#define I2S_CTRL_LRCK_L_LOW			(I2S_LRCK_LEFT_LOW  << I2S_CTRL_LRCK_SHIFT)
+#define I2S_CTRL_LRCK_R_LOW			(I2S_LRCK_RIGHT_LOW << I2S_CTRL_LRCK_SHIFT)
+
+#define I2S_CTRL_LPBK_ENABLE			(1 << 8)
+
+#define I2S_BIT_CODE_LINEAR			0
+#define I2S_BIT_CODE_ULAW			1
+#define I2S_BIT_CODE_ALAW			2
+
+#define I2S_CTRL_BIT_CODE_SHIFT			4
+#define I2S_CTRL_BIT_CODE_MASK			(3 << I2S_CTRL_BIT_CODE_SHIFT)
+#define I2S_CTRL_BIT_CODE_LINEAR		(I2S_BIT_CODE_LINEAR << I2S_CTRL_BIT_CODE_SHIFT)
+#define I2S_CTRL_BIT_CODE_ULAW			(I2S_BIT_CODE_ULAW   << I2S_CTRL_BIT_CODE_SHIFT)
+#define I2S_CTRL_BIT_CODE_ALAW			(I2S_BIT_CODE_ALAW   << I2S_CTRL_BIT_CODE_SHIFT)
+
+#define I2S_BITS_8				1
+#define I2S_BITS_12				2
+#define I2S_BITS_16				3
+#define I2S_BITS_20				4
+#define I2S_BITS_24				5
+#define I2S_BITS_28				6
+#define I2S_BITS_32				7
+
+/* Sample container size; see {RX,TX}_MASK field in CH_CTRL below */
+#define I2S_CTRL_BIT_SIZE_SHIFT			0
+#define I2S_CTRL_BIT_SIZE_MASK			(7 << I2S_CTRL_BIT_SIZE_SHIFT)
+#define I2S_CTRL_BIT_SIZE_8			(I2S_BITS_8  << I2S_CTRL_BIT_SIZE_SHIFT)
+#define I2S_CTRL_BIT_SIZE_12			(I2S_BITS_12 << I2S_CTRL_BIT_SIZE_SHIFT)
+#define I2S_CTRL_BIT_SIZE_16			(I2S_BITS_16 << I2S_CTRL_BIT_SIZE_SHIFT)
+#define I2S_CTRL_BIT_SIZE_20			(I2S_BITS_20 << I2S_CTRL_BIT_SIZE_SHIFT)
+#define I2S_CTRL_BIT_SIZE_24			(I2S_BITS_24 << I2S_CTRL_BIT_SIZE_SHIFT)
+#define I2S_CTRL_BIT_SIZE_28			(I2S_BITS_28 << I2S_CTRL_BIT_SIZE_SHIFT)
+#define I2S_CTRL_BIT_SIZE_32			(I2S_BITS_32 << I2S_CTRL_BIT_SIZE_SHIFT)
+
+/* Fields in I2S_TIMING */
+
+#define I2S_TIMING_NON_SYM_ENABLE		(1 << 12)
+#define I2S_TIMING_CHANNEL_BIT_COUNT_SHIFT	0
+#define I2S_TIMING_CHANNEL_BIT_COUNT_MASK_US	0x7ff
+#define I2S_TIMING_CHANNEL_BIT_COUNT_MASK	(I2S_TIMING_CHANNEL_BIT_COUNT_MASK_US << I2S_TIMING_CHANNEL_BIT_COUNT_SHIFT)
+
+/* Fields in I2S_OFFSET */
+
+#define I2S_OFFSET_RX_DATA_OFFSET_SHIFT		16
+#define I2S_OFFSET_RX_DATA_OFFSET_MASK_US	0x7ff
+#define I2S_OFFSET_RX_DATA_OFFSET_MASK		(I2S_OFFSET_RX_DATA_OFFSET_MASK_US << I2S_OFFSET_RX_DATA_OFFSET_SHIFT)
+#define I2S_OFFSET_TX_DATA_OFFSET_SHIFT		0
+#define I2S_OFFSET_TX_DATA_OFFSET_MASK_US	0x7ff
+#define I2S_OFFSET_TX_DATA_OFFSET_MASK		(I2S_OFFSET_TX_DATA_OFFSET_MASK_US << I2S_OFFSET_TX_DATA_OFFSET_SHIFT)
+
+/* Fields in I2S_CH_CTRL */
+
+/* (FSYNC width - 1) in bit clocks */
+#define I2S_CH_CTRL_FSYNC_WIDTH_SHIFT		24
+#define I2S_CH_CTRL_FSYNC_WIDTH_MASK_US		0xff
+#define I2S_CH_CTRL_FSYNC_WIDTH_MASK		(I2S_CH_CTRL_FSYNC_WIDTH_MASK_US << I2S_CH_CTRL_FSYNC_WIDTH_SHIFT)
+
+#define I2S_HIGHZ_NO				0
+#define I2S_HIGHZ_YES				1
+#define I2S_HIGHZ_ON_HALF_BIT_CLK		2
+
+#define I2S_CH_CTRL_HIGHZ_CTRL_SHIFT		12
+#define I2S_CH_CTRL_HIGHZ_CTRL_MASK		(3 << I2S_CH_CTRL_HIGHZ_CTRL_SHIFT)
+#define I2S_CH_CTRL_HIGHZ_CTRL_NO		(I2S_HIGHZ_NO << I2S_CH_CTRL_HIGHZ_CTRL_SHIFT)
+#define I2S_CH_CTRL_HIGHZ_CTRL_YES		(I2S_HIGHZ_YES << I2S_CH_CTRL_HIGHZ_CTRL_SHIFT)
+#define I2S_CH_CTRL_HIGHZ_CTRL_ON_HALF_BIT_CLK	(I2S_HIGHZ_ON_HALF_BIT_CLK << I2S_CH_CTRL_HIGHZ_CTRL_SHIFT)
+
+#define I2S_MSB_FIRST				0
+#define I2S_LSB_FIRST				1
+
+#define I2S_CH_CTRL_RX_BIT_ORDER_SHIFT		10
+#define I2S_CH_CTRL_RX_BIT_ORDER_MASK		(1 << I2S_CH_CTRL_RX_BIT_ORDER_SHIFT)
+#define I2S_CH_CTRL_RX_BIT_ORDER_MSB_FIRST	(I2S_MSB_FIRST << I2S_CH_CTRL_RX_BIT_ORDER_SHIFT)
+#define I2S_CH_CTRL_RX_BIT_ORDER_LSB_FIRST	(I2S_LSB_FIRST << I2S_CH_CTRL_RX_BIT_ORDER_SHIFT)
+#define I2S_CH_CTRL_TX_BIT_ORDER_SHIFT		9
+#define I2S_CH_CTRL_TX_BIT_ORDER_MASK		(1 << I2S_CH_CTRL_TX_BIT_ORDER_SHIFT)
+#define I2S_CH_CTRL_TX_BIT_ORDER_MSB_FIRST	(I2S_MSB_FIRST << I2S_CH_CTRL_TX_BIT_ORDER_SHIFT)
+#define I2S_CH_CTRL_TX_BIT_ORDER_LSB_FIRST	(I2S_LSB_FIRST << I2S_CH_CTRL_TX_BIT_ORDER_SHIFT)
+
+#define I2S_POS_EDGE				0
+#define I2S_NEG_EDGE				1
+
+#define I2S_CH_CTRL_EGDE_CTRL_SHIFT		8
+#define I2S_CH_CTRL_EGDE_CTRL_MASK		(1 << I2S_CH_CTRL_EGDE_CTRL_SHIFT)
+#define I2S_CH_CTRL_EGDE_CTRL_POS_EDGE		(I2S_POS_EDGE << I2S_CH_CTRL_EGDE_CTRL_SHIFT)
+#define I2S_CH_CTRL_EGDE_CTRL_NEG_EDGE		(I2S_NEG_EDGE << I2S_CH_CTRL_EGDE_CTRL_SHIFT)
+
+/* Sample size is # bits from BIT_SIZE minus this field */
+#define I2S_CH_CTRL_RX_MASK_BITS_SHIFT		4
+#define I2S_CH_CTRL_RX_MASK_BITS_MASK_US	7
+#define I2S_CH_CTRL_RX_MASK_BITS_MASK		(I2S_CH_CTRL_RX_MASK_BITS_MASK_US << I2S_CH_CTRL_RX_MASK_BITS_SHIFT)
+
+#define I2S_CH_CTRL_TX_MASK_BITS_SHIFT		0
+#define I2S_CH_CTRL_TX_MASK_BITS_MASK_US	7
+#define I2S_CH_CTRL_TX_MASK_BITS_MASK		(I2S_CH_CTRL_TX_MASK_BITS_MASK_US << I2S_CH_CTRL_TX_MASK_BITS_SHIFT)
+
+/* Fields in I2S_SLOT_CTRL */
+
+/* Number of slots in frame, minus 1 */
+#define I2S_SLOT_CTRL_TOTAL_SLOTS_SHIFT		16
+#define I2S_SLOT_CTRL_TOTAL_SLOTS_MASK_US	7
+#define I2S_SLOT_CTRL_TOTAL_SLOTS_MASK		(I2S_SLOT_CTRL_TOTAL_SLOT_MASK_US << I2S_SLOT_CTRL_TOTAL_SLOT_SHIFT)
+
+/* TDM mode slot enable bitmask */
+#define I2S_SLOT_CTRL_RX_SLOT_ENABLES_SHIFT	8
+#define I2S_SLOT_CTRL_RX_SLOT_ENABLES_MASK	(0xff << I2S_SLOT_CTRL_RX_SLOT_ENABLES_SHIFT)
+
+#define I2S_SLOT_CTRL_TX_SLOT_ENABLES_SHIFT	0
+#define I2S_SLOT_CTRL_TX_SLOT_ENABLES_MASK	(0xff << I2S_SLOT_CTRL_TX_SLOT_ENABLES_SHIFT)
+
+/* Fields in I2S_CIF_RX_CTRL */
+/* Uses field from AUDIOCIF_CTRL_* in ahub.h */
+
+/* Fields in I2S_CIF_TX_CTRL */
+/* Uses field from AUDIOCIF_CTRL_* in ahub.h */
+
+/* Fields in I2S_FLOWCTL */
+
+#define I2S_FILTER_LINEAR			0
+#define I2S_FILTER_QUAD				1
+
+#define I2S_FLOWCTL_FILTER_SHIFT		31
+#define I2S_FLOWCTL_FILTER_MASK			(1 << I2S_FLOWCTL_FILTER_SHIFT)
+#define I2S_FLOWCTL_FILTER_LINEAR		(I2S_FILTER_LINEAR << I2S_FLOWCTL_FILTER_SHIFT)
+#define I2S_FLOWCTL_FILTER_QUAD			(I2S_FILTER_QUAD   << I2S_FLOWCTL_FILTER_SHIFT)
+
+/* Fields in I2S_TX_STEP */
+
+#define I2S_TX_STEP_SHIFT			0
+#define I2S_TX_STEP_MASK_US			0xffff
+#define I2S_TX_STEP_MASK			(I2S_TX_STEP_MASK_US << I2S_TX_STEP_SHIFT)
+
+/* Fields in I2S_FLOW_STATUS */
+
+#define I2S_FLOW_STATUS_UNDERFLOW		(1 << 31)
+#define I2S_FLOW_STATUS_OVERFLOW		(1 << 30)
+#define I2S_FLOW_STATUS_MONITOR_INT_EN		(1 << 4)
+#define I2S_FLOW_STATUS_COUNTER_CLR		(1 << 3)
+#define I2S_FLOW_STATUS_MONITOR_CLR		(1 << 2)
+#define I2S_FLOW_STATUS_COUNTER_EN		(1 << 1)
+#define I2S_FLOW_STATUS_MONITOR_EN		(1 << 0)
+
+/*
+ * There are no fields in I2S_FLOW_TOTAL, I2S_FLOW_OVER,
+ * I2S_FLOW_UNDER; they are counters taking the whole register.
+ */
+
+#endif	/* __TEGRA_I2S_H__ */
