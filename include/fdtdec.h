@@ -132,6 +132,8 @@ enum fdt_compat_id {
 					/* Tegra124 XUSB pad controller */
 	COMPAT_NVIDIA_TEGRA210_XUSB_PADCTL,
 					/* Tegra210 XUSB pad controller */
+	COMPAT_NVIDIA_TEGRA114_SOUND,	/* Tegra114 Sound */
+	COMPAT_REALTEK_RT5640_CODEC,	/* RealTek ALC5640 audio codec */
 	COMPAT_SMSC_LAN9215,		/* SMSC 10/100 Ethernet LAN9215 */
 	COMPAT_SAMSUNG_EXYNOS5_SROMC,	/* Exynos5 SROMC */
 	COMPAT_SAMSUNG_S3C2440_I2C,	/* Exynos I2C Controller */

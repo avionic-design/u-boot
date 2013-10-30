@@ -1024,4 +1024,10 @@
 				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
 		interrupt-parent = <&gic>;
 	};
+
+	sound@70301100 {
+		compatible = "nvidia,tegra114-sound";
+		reg = <0x70301100 0x100>;
+		clocks = <&tegra_car 11>;
+	};
 };
