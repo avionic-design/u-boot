@@ -585,7 +585,7 @@ config CMD_SETGETDCR
 
 config CMD_SOUND
 	bool "sound"
-	depends on SOUND
+	depends on SOUND || TEGRA_SOUND
 	help
 	  This provides basic access to the U-Boot's sound support. The main
 	  feature is to play a beep.

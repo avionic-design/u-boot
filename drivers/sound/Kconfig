@@ -31,6 +31,28 @@ config I2S_SAMSUNG
 	  option provides an implementation for sound_init() and
 	  sound_play().
 
+config TEGRA_SOUND
+	bool "Enable sound support on Tegra"
+	help
+	  Support making sounds through an audio codec. This is normally a
+	  beep at a chosen frequency for a selected length of time. However
+	  the drivers support playing arbitrary sound samples using a
+	  PCM interface.
+
+	  Note: At present the sound setup is somewhat tangled up in that the
+	  audio codecs are called from the sound-i2s code. This could be
+	  converted to driver model.
+
+config TEGRA_I2S
+	bool "Enable I2S support for Tegra (30 and newer) SoCs"
+	depends on TEGRA_SOUND
+	help
+	  Nvidia Tegra SoCs support an I2S interface for sending audio
+	  data to an audio codec. This option enables support for this,
+	  using one of the available audio codec drivers. Enabling this
+	  option provides an implementation for sound_init() and
+	  sound_play().
+
 config SOUND_MAX98095
 	bool "Support Maxim max98095 audio codec"
 	depends on I2S_SAMSUNG

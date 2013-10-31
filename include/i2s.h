@@ -64,6 +64,7 @@
 #define I2S_TX_ON	1
 #define I2S_TX_OFF	0
 
+#if !defined(CONFIG_TEGRA)
 #define FIFO_LENGTH	64
 
 /* I2s Registers */
@@ -75,6 +76,7 @@ struct i2s_reg {
 	unsigned int txd;	/* Transmit data register */
 	unsigned int rxd;	/* Receive Data Register */
 };
+#endif	/* !CONFIG_TEGRA */
 
 /* This structure stores the i2s related information */
 struct i2stx_info {
@@ -86,6 +88,7 @@ struct i2stx_info {
 	unsigned int channels;		/* audio channels */
 	unsigned int base_address;	/* I2S Register Base */
 	unsigned int id;		/* I2S controller id */
+	int periph_id;			/* I2S Periph ID */
 };
 
 /*
