@@ -67,6 +67,8 @@
 
 #define E2P_CMD				0x30
 #define E2P_CMD_BUSY_			0x80000000
+#define E2P_CMD_EWEN_			0x20000000
+#define E2P_CMD_WRITE_			0x30000000
 #define E2P_CMD_READ_			0x00000000
 #define E2P_CMD_TIMEOUT_		0x00000400
 #define E2P_CMD_LOADED_			0x00000200
@@ -313,6 +315,50 @@ static int smsc95xx_read_eeprom(struct ueth_data *dev, u32 offset, u32 length,
 
 		smsc95xx_read_reg(dev, E2P_DATA, &val);
 		data[i] = val & 0xFF;
+		offset++;
+	}
+	return 0;
+}
+
+int smsc95xx_write_eeprom(struct ueth_data *dev, u32 offset, u32 length,
+			u8 *data)
+{
+	u32 val;
+	int i, ret;
+
+	ret = smsc95xx_eeprom_confirm_not_busy(dev);
+	if (ret)
+		return ret;
+
+	/* Issue write/erase enable command */
+	val = E2P_CMD_BUSY_ | E2P_CMD_EWEN_;
+	ret = smsc95xx_write_reg(dev, E2P_CMD, val);
+	if (ret < 0)
+		return ret;
+
+	ret = smsc95xx_wait_eeprom(dev);
+	if (ret < 0)
+		return ret;
+
+	for (i = 0; i < length; i++) {
+
+		/* Fill data register */
+		val = data[i];
+		ret = smsc95xx_write_reg(dev, E2P_DATA, val);
+		if (ret < 0)
+			return ret;
+
+		/* Send "write" command */
+		val = E2P_CMD_BUSY_ | E2P_CMD_WRITE_ |
+			(offset & E2P_CMD_ADDR_);
+		ret = smsc95xx_write_reg(dev, E2P_CMD, val);
+		if (ret < 0)
+			return ret;
+
+		ret = smsc95xx_wait_eeprom(dev);
+		if (ret < 0)
+			return ret;
+
 		offset++;
 	}
 	return 0;
