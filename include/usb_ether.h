@@ -54,6 +54,8 @@ struct ueth_data {
 	void *dev_priv;
 };
 
+struct ueth_data * get_usb_eth(int index);
+
 /*
  * Function definitions for each USB ethernet driver go here, bracketed by
  * #ifdef CONFIG_USB_ETHER_xxx...#endif

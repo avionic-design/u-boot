@@ -75,6 +75,16 @@ int is_eth_dev_on_usb_host(void)
 }
 
 /*
+ * Get the USB ethernet adapter at the given index
+ */
+struct ueth_data * get_usb_eth(int index)
+{
+	if (index < 0 || index >= usb_max_eth_dev)
+		return NULL;
+	return &usb_eth[index];
+}
+
+/*
  * Given a USB device, ask each driver if it can support it, and attach it
  * to the first driver that says 'yes'
  */
