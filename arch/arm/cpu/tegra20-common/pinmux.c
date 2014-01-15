@@ -205,7 +205,8 @@ enum pmux_pullid {
 
 	PUCTL_SPDI,
 	PUCTL_SPDO,
-	PUCTL_GPSLXAU,
+	PUCTL_GPU,
+	PUCTL_SLXA,
 	PUCTL_CRTP,
 	PUCTL_SLXC,
 	PUCTL_SLXD,
@@ -348,8 +349,7 @@ const struct tegra_pingroup_desc tegra_soc_pingroups[PINGRP_COUNT] = {
 	PIN(DTD,  VI,    RSVD,   SDIO2,  VI,        RSVD,        RSVD1),
 	PIN(DTE,  VI,    RSVD,   RSVD,   VI,        SPI1,        RSVD1),
 
-	PINP(GPU, UART,  PWM,    UARTA,  GMI,       RSVD,        RSVD4,
-		GPSLXAU),
+	PIN(GPU,  UART,  PWM,    UARTA,  GMI,       RSVD,        RSVD4),
 	PIN(GPV,  SD,    PCIE,   RSVD,   RSVD,      RSVD,        PCIE),
 	PIN(I2CP, SYS,   I2C,    RSVD,   RSVD,      RSVD,        RSVD4),
 	PIN(IRTX, UART,  UARTA,  UARTB,  GMI,       SPI4,        UARTB),
@@ -371,7 +371,7 @@ const struct tegra_pingroup_desc tegra_soc_pingroups[PINGRP_COUNT] = {
 	PIN(SDC,  SD,    PWM,    TWC,    SDIO3,     SPI3,        TWC),
 	PIN(SDD,  SD,    UARTA,  PWM,    SDIO3,     SPI3,        PWM),
 	PIN_RESERVED,
-	PINP(SLXA, SD,   PCIE,   SPI4,   SDIO3,     SPI2,        PCIE, CRTP),
+	PIN(SLXA, SD,    PCIE,   SPI4,   SDIO3,     SPI2,        PCIE),
 	PIN(SLXC, SD,    SPDIF,  SPI4,   SDIO3,     SPI2,        SPI4),
 	PIN(SLXD, SD,    SPDIF,  SPI4,   SDIO3,     SPI2,        SPI4),
 	PIN(SLXK, SD,    PCIE,   SPI4,   SDIO3,     SPI2,        PCIE),
