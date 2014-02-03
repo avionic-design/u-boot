@@ -295,8 +295,8 @@ static int smsc95xx_wait_eeprom(struct ueth_data *dev)
 	return 0;
 }
 
-static int smsc95xx_read_eeprom(struct ueth_data *dev, u32 offset, u32 length,
-				u8 *data)
+int smsc95xx_read_eeprom(struct ueth_data *dev, u32 offset, u32 length,
+			u8 *data)
 {
 	u32 val;
 	int i, ret;

@@ -74,6 +74,8 @@ int smsc95xx_eth_probe(struct usb_device *dev, unsigned int ifnum,
 			struct ueth_data *ss);
 int smsc95xx_eth_get_info(struct usb_device *dev, struct ueth_data *ss,
 			struct eth_device *eth);
+int smsc95xx_read_eeprom(struct ueth_data *dev, u32 offset, u32 length,
+			u8 *data);
 int smsc95xx_write_eeprom(struct ueth_data *dev, u32 offset, u32 length,
 			u8 *data);
 #endif
