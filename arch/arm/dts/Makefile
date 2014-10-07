@@ -41,6 +41,7 @@ dtb-$(CONFIG_TEGRA) += tegra20-harmony.dtb \
 	tegra30-tec-ng.dtb \
 	tegra114-dalmore.dtb \
 	tegra124-jetson-tk1.dtb \
+	tegra124-kein-baseboard.dtb \
 	tegra124-nyan-big.dtb \
 	tegra124-venice2.dtb \
 	tegra210-e2220-1170.dtb \

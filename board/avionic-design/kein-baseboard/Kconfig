@@ -1,0 +1,15 @@
+if TARGET_KEIN_BASEBOARD
+
+config SYS_BOARD
+	string
+	default "kein-baseboard"
+
+config SYS_VENDOR
+	string
+	default "avionic-design"
+
+config SYS_CONFIG_NAME
+	string
+	default "kein-baseboard"
+
+endif
