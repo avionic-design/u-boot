@@ -21,6 +21,14 @@ config TARGET_NYAN_BIG
 config TARGET_VENICE2
 	bool "NVIDIA Tegra124 Venice2"
 
+config TARGET_KEIN_BASEBOARD
+	bool "Avionic Design Kein Baseboard"
+	select CPU_V7_HAS_NONSEC if !SPL_BUILD
+	select CPU_V7_HAS_VIRT if !SPL_BUILD
+	help
+	  Minimal baseboard for Avionic Design Meerkat COM. Should work with most
+	  baseboard that follow the reference design.
+
 endchoice
 
 config SYS_SOC
@@ -29,5 +37,6 @@ config SYS_SOC
 source "board/nvidia/jetson-tk1/Kconfig"
 source "board/nvidia/nyan-big/Kconfig"
 source "board/nvidia/venice2/Kconfig"
+source "board/avionic-design/kein-baseboard/Kconfig"
 
 endif
