@@ -1,0 +1,7 @@
+Kein Baseboard
+M:	Julian Scheel <julian@jusst.de>
+M:	Alban Bedel <alban.bedel@avionic-design.de>
+S:	Maintained
+F:	board/avionic-design/kbb
+F:	include/configs/kbb.h
+F:	configs/meerkat_defconfig
