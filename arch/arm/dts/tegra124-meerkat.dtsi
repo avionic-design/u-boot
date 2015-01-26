@@ -24,12 +24,12 @@
 
 	pcie-controller@01003000 {
 		avddio-pex-supply = <&vdd_1v05_run>;
-		vddio-pex-supply = <&vdd_1v05_run>;
+		dvddio-pex-supply = <&vdd_1v05_run>;
 		avdd-pex-pll-supply = <&vdd_1v05_run>;
 		hvdd-pex-supply = <&vdd_3v3_lp0>;
-		hvdd-pex-plle-supply = <&vdd_3v3_lp0>;
+		hvdd-pex-pll-e-supply = <&vdd_3v3_lp0>;
 		vddio-pex-ctl-supply = <&vdd_3v3_lp0>;
-		avdd-plle-supply = <&avdd_1v05_run>;
+		avdd-pll-erefe-supply = <&avdd_1v05_run>;
 	};
 
 	/* Expansion GEN1_I2C_* */
