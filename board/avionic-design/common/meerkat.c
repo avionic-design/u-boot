@@ -19,9 +19,6 @@ void pinmux_init(void)
 {
 	pinmux_set_tristate_input_clamping();
 
-	gpio_config_table(meerkat_gpio_inits,
-			  ARRAY_SIZE(meerkat_gpio_inits));
-
 	pinmux_config_pingrp_table(meerkat_pingrps,
 				   ARRAY_SIZE(meerkat_pingrps));
 
