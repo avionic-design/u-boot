@@ -30,6 +30,18 @@
 		status = "okay";
 	};
 
+	pcie-controller@01003000 {
+		status = "okay";
+
+		pci@1,0 {
+			status = "okay";
+		};
+
+		pci@2,0 {
+			status = "okay";
+		};
+	};
+
 	regulators {
 		vdd_5v0: regulator@100 {
 			compatible = "regulator-fixed";
