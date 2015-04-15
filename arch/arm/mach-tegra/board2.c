@@ -148,7 +148,7 @@ int board_init(void)
 #  endif
 # endif /* CONFIG_TEGRA_PMU */
 #ifdef CONFIG_AS3722_POWER
-	err = as3722_init(NULL);
+	err = as3722_init(NULL, 0, 0x40);
 	if (err && err != -ENODEV)
 		return err;
 #endif
