@@ -297,6 +297,11 @@
 		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(N, 4) GPIO_ACTIVE_HIGH>;
 	};
 
+	usb@7d004000 {
+		phy_type = "utmi";
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(N, 5) GPIO_ACTIVE_HIGH>;
+	};
+
 	usb@7d008000 {
 		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(FF, 1) GPIO_ACTIVE_HIGH>;
 	};
