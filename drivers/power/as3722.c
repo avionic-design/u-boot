@@ -234,12 +234,10 @@ int as3722_gpio_direction_output(struct udevice *pmic, unsigned int gpio,
 	return 0;
 }
 
-int as3722_init(struct udevice **devp)
+int as3722_init(struct udevice **devp, unsigned int bus, unsigned int address)
 {
 	struct udevice *pmic;
 	u8 id, revision;
-	const unsigned int bus = 0;
-	const unsigned int address = 0x40;
 	int err;
 
 	err = i2c_get_chip_for_busnum(bus, address, &pmic);

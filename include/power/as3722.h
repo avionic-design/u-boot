@@ -14,7 +14,7 @@
 
 struct udevice;
 
-int as3722_init(struct udevice **devp);
+int as3722_init(struct udevice **devp, unsigned int bus, unsigned int address);
 int as3722_sd_enable(struct udevice *pmic, unsigned int sd);
 int as3722_sd_set_voltage(struct udevice *pmic, unsigned int sd, u8 value);
 int as3722_ldo_enable(struct udevice *pmic, unsigned int ldo);
