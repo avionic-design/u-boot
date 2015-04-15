@@ -41,7 +41,7 @@ int tegra_pcie_board_init(void)
 	struct udevice *pmic;
 	int err;
 
-	err = as3722_init(&pmic);
+	err = as3722_init(&pmic, 0, 0x40);
 	if (err) {
 		error("failed to initialize AS3722 PMIC: %d\n", err);
 		return err;
