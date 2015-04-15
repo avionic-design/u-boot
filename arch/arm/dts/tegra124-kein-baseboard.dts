@@ -14,6 +14,10 @@
 		status = "okay";
 	};
 
+	sdhci@700b0400 {
+		status = "okay";
+	};
+
 	usb@7d000000 {
 		status = "okay";
 	};
