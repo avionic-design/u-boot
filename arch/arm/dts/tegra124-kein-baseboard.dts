@@ -22,6 +22,10 @@
 		status = "okay";
 	};
 
+	usb@7d004000 {
+		status = "okay";
+	};
+
 	usb@7d008000 {
 		status = "okay";
 	};
