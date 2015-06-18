@@ -147,6 +147,21 @@
 	BOOT_TARGET_DEVICES_references_PXE_without_CONFIG_CMD_DHCP_or_PXE
 #endif
 
+#if defined(CONFIG_CMD_USB_MASS_STORAGE)
+#define BOOTENV_DEV_UMS(devtypeu, devtypel, instance) \
+	"bootcmd_ums" #instance "=" \
+		BOOTENV_RUN_USB_INIT \
+		"echo Entering USB mass storage...; " \
+		"ums ums " #instance "\0"
+#define BOOTENV_DEV_NAME_UMS(devtypeu, devtypel, instance) \
+	"ums" #instance " "
+#else
+#define BOOTENV_DEV_UMS \
+	BOOT_TARGET_DEVICES_references_UMS_without_CONFIG_CMD_UMS
+#define BOOTENV_DEV_NAME_UMS \
+	BOOT_TARGET_DEVICES_references_UMS_without_CONFIG_CMD_UMS
+#endif
+
 #define BOOTENV_DEV_NAME(devtypeu, devtypel, instance) \
 	BOOTENV_DEV_NAME_##devtypeu(devtypeu, devtypel, instance)
 #define BOOTENV_BOOT_TARGETS \
