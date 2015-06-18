@@ -14,7 +14,8 @@
 	func(MMC, mmc, 0) \
 	func(USB, usb, 0) \
 	func(PXE, pxe, na) \
-	func(DHCP, dhcp, na)
+	func(DHCP, dhcp, na) \
+	func(UMS, ums, 0)
 #include <config_distro_bootcmd.h>
 #else
 #define BOOTENV
