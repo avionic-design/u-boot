@@ -150,7 +150,6 @@
 #if defined(CONFIG_CMD_USB_MASS_STORAGE)
 #define BOOTENV_DEV_UMS(devtypeu, devtypel, instance) \
 	"bootcmd_ums" #instance "=" \
-		BOOTENV_RUN_USB_INIT \
 		"echo Entering USB mass storage...; " \
 		"ums ums " #instance "\0"
 #define BOOTENV_DEV_NAME_UMS(devtypeu, devtypel, instance) \
