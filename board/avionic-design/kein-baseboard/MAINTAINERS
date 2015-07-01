@@ -4,4 +4,4 @@ M:	Alban Bedel <alban.bedel@avionic-design.de>
 S:	Maintained
 F:	board/avionic-design/kbb
 F:	include/configs/kbb.h
-F:	configs/meerkat_defconfig
+F:	configs/kein-baseboard_defconfig
