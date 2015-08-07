@@ -70,6 +70,20 @@
 /* support the new (FDT-based) image format */
 #define CONFIG_FIT
 
+/* Fastboot support */
+#define CONFIG_CMD_FASTBOOT
+#define CONFIG_ANDROID_BOOT_IMAGE
+#define CONFIG_USB_FASTBOOT_BUF_ADDR   CONFIG_SYS_LOAD_ADDR
+#define CONFIG_USB_FASTBOOT_BUF_SIZE   0x07000000
+#define CONFIG_FASTBOOT_FLASH
+#define CONFIG_FASTBOOT_FLASH_MMC_DEV  0
+#define CONFIG_FASTBOOT_GPT_NAME       "gpt"
+
+/* GPT partitions support */
+#define CONFIG_RANDOM_UUID
+#define CONFIG_EFI_PARTITION
+#define CONFIG_CMD_GPT
+
 #include "tegra-common-usb-gadget.h"
 #include "tegra-common-post.h"
 
