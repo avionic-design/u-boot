@@ -894,6 +894,11 @@ int boot_get_ramdisk(int argc, char * const argv[], bootm_headers_t *images,
 	 * Look for a '-' which indicates to ignore the
 	 * ramdisk argument
 	 */
+#ifdef CONFIG_ANDROID_BOOT_IMAGE
+	if (select && strcmp(select, "-") ==  0 &&
+			genimg_get_format((void *)images->os.start) == IMAGE_FORMAT_ANDROID)
+		select = NULL;
+#endif
 	if (select && strcmp(select, "-") ==  0) {
 		debug("## Skipping init Ramdisk\n");
 		rd_len = rd_data = 0;
