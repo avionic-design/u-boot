@@ -73,4 +73,7 @@
 #define CONFIG_USB_EHCI_TXFIFO_THRESH	0x10
 #define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 1
 
+/* Due to DMA boundaries limited to 512KiB and a block size of 512 */
+#define CONFIG_SYS_MMC_MAX_BLK_COUNT   1024
+
 #endif /* _TEGRA124_COMMON_H_ */
