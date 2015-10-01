@@ -78,6 +78,7 @@
 #define CONFIG_FASTBOOT_FLASH
 #define CONFIG_FASTBOOT_FLASH_MMC_DEV  0
 #define CONFIG_FASTBOOT_GPT_NAME       "gpt"
+#define CONFIG_CMD_GET_BOOT_MODE
 
 /* GPT partitions support */
 #define CONFIG_RANDOM_UUID
