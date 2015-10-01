@@ -8,3 +8,4 @@
 #
 
 obj-$(CONFIG_CMD_ENTERRCM) += cmd_enterrcm.o
+obj-$(CONFIG_CMD_GET_BOOT_MODE) += cmd_getbootmode.o
