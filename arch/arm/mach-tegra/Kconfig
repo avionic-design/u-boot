@@ -77,6 +77,10 @@ config TEGRA_DISCONNECT_UDC_ON_BOOT
 config SYS_MALLOC_F_LEN
 	default 0x1800
 
+config ENABLE_CORESIGHT
+	bool "Enable CoreSight"
+	default y
+
 source "arch/arm/mach-tegra/tegra20/Kconfig"
 source "arch/arm/mach-tegra/tegra30/Kconfig"
 source "arch/arm/mach-tegra/tegra114/Kconfig"
