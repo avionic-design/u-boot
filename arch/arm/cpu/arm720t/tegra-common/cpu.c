@@ -348,6 +348,7 @@ void reset_A9_cpu(int reset)
 
 void clock_enable_coresight(int enable)
 {
+#if defined(CONFIG_ENABLE_CORESIGHT)
 	u32 rst, src = 2;
 
 	debug("clock_enable_coresight entry\n");
@@ -373,6 +374,7 @@ void clock_enable_coresight(int enable)
 			writel(rst, CSITE_CPU_DBG3_LAR);
 		}
 	}
+#endif
 }
 
 void halt_avp(void)
