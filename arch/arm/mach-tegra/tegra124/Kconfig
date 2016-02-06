@@ -23,6 +23,8 @@ config TARGET_VENICE2
 
 config TARGET_KBB
 	bool "Avionic Design Kein Baseboard"
+	select CPU_V7_HAS_NONSEC if !SPL_BUILD
+	select CPU_V7_HAS_VIRT if !SPL_BUILD
 	help
 	  Minimal baseboard for Avionic Design Meerkat COM. Should work with most
 	  baseboard that follow the reference design.
