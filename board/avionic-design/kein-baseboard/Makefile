@@ -7,5 +7,3 @@
 
 obj-y	+= ../../nvidia/venice2/as3722_init.o
 obj-y	+= ../common/meerkat.o
-
-include $(srctree)/board/nvidia/common/common.mk
