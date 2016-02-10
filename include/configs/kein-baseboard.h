@@ -66,7 +66,6 @@
 #define CONFIG_CMD_PCI_ENUM
 
 /* General networking support */
-#define CONFIG_CMD_NET
 #define CONFIG_CMD_DHCP
 
 /* support the new (FDT-based) image format */
