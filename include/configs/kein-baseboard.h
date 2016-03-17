@@ -18,6 +18,7 @@
 /* High-level configuration options */
 #define V_PROMPT			"Tegra124 (Kein Baseboard) # "
 #define CONFIG_TEGRA_BOARD_STRING	"Avionic-Design Kein Baseboard"
+#define CONFIG_ZERO_BOOTDELAY_CHECK
 
 /* Board-specific serial config */
 #define CONFIG_SERIAL_MULTI
