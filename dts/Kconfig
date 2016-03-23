@@ -85,4 +85,34 @@ config OF_SPL_REMOVE_PROPS
 	  can be discarded. This option defines the list of properties to
 	  discard.
 
+menuconfig OF_ADD_PUBLIC_KEYS
+	bool "Add public keys for signature verify into device-tree"
+	help
+	  If this option is enabled a public key can be specified that will be
+	  stored inside the dtb file for fit image signature verifying.
+
+if OF_ADD_PUBLIC_KEYS
+
+config OF_KEYDIR
+	string "Directory containting keyfiles"
+	help
+	  This option specified where mkimage will look for key files
+
+config OF_KEYNAME
+	string "key name"
+	help
+	  Sets which key is added into the dtb. The keyname has to be the name
+	  of the public key file without the .crt suffix.
+
+	  A keyname of "dev" would cause mkimage to read "dev.crt" from
+	  OF_KEYDIR.
+
+config OF_KEYALGO
+	string "key algorithm"
+	default "sha256,rsa2048"
+	help
+	  This option is used to specify which algorithm the specified key
+	  uses.
+endif
+
 endmenu

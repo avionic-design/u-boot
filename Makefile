@@ -792,6 +792,9 @@ quiet_cmd_mkimage = MKIMAGE $@
 cmd_mkimage = $(objtree)/tools/mkimage $(MKIMAGEFLAGS_$(@F)) -d $< $@ \
 	$(if $(KBUILD_VERBOSE:1=), >/dev/null)
 
+quiet_cmd_mkimagesig = MKIMAGESIG $@
+cmd_mkimagesig = $(objtree)/tools/mkimage $(MKIMAGESIGFLAGS_$(@F)) -K $@
+
 quiet_cmd_cat = CAT     $@
 cmd_cat = cat $(filter-out $(PHONY), $^) > $@
 
@@ -833,8 +836,11 @@ endif
 %.imx: %.bin
 	$(Q)$(MAKE) $(build)=arch/arm/imx-common $@
 
+MKIMAGESIGFLAGS_u-boot.dtb = -k $(CONFIG_OF_KEYDIR) -p $(CONFIG_OF_KEYNAME) -L $(CONFIG_OF_KEYALGO) -r
 u-boot.dtb: dts/dt.dtb
 	$(call cmd,copy)
+	$(if $(CONFIG_OF_ADD_PUBLIC_KEYS), \
+		$(call if_changed,mkimagesig))
 
 OBJCOPYFLAGS_u-boot.hex := -O ihex
 
