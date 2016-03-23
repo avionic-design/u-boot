@@ -9,6 +9,7 @@
  */
 
 #include "mkimage.h"
+#include "fit_common.h"
 #include <image.h>
 #include <version.h>
 
@@ -136,7 +137,7 @@ static void process_args(int argc, char **argv)
 	int opt;
 
 	while ((opt = getopt(argc, argv,
-			     "a:A:b:cC:d:D:e:Ef:Fk:K:ln:O:rR:qsT:vVx")) != -1) {
+			     "a:A:b:cC:d:D:e:Ef:Fk:K:lp:L:n:O:rR:qsT:vVx")) != -1) {
 		switch (opt) {
 		case 'a':
 			params.addr = strtoull(optarg, &ptr, 16);
@@ -208,6 +209,12 @@ static void process_args(int argc, char **argv)
 		case 'l':
 			params.lflag = 1;
 			break;
+		case 'p':
+			params.keyname = optarg;
+			break;
+		case 'L':
+			params.keyalgo = optarg;
+			break;
 		case 'n':
 			params.imagename = optarg;
 			break;
@@ -270,7 +277,8 @@ static void process_args(int argc, char **argv)
 		params.type = type;
 	}
 
-	if (!params.imagefile)
+	if (!params.imagefile && !(params.keydir && params.keydest &&
+				params.keyname && params.keyalgo))
 		usage("Missing output filename");
 }
 
@@ -290,6 +298,39 @@ int main(int argc, char **argv)
 	params.ep = 0;
 
 	process_args(argc, argv);
+
+	if (params.keydir && params.keydest &&
+			params.keyname && params.keyalgo) {
+		struct image_sign_info info;
+		void *dest_blob = NULL;
+		struct stat dest_sbuf;
+		off_t destfd_size = 0;
+		int destfd = 0;
+
+		destfd = mmap_fdt("pubkey", params.keydest, 1024,
+				  &dest_blob, &dest_sbuf, false);
+		if (destfd < 0) {
+			fprintf(stderr, "Failed to map keydest %s\n", params.keydest);
+			return -1;
+		}
+		destfd_size = dest_sbuf.st_size;
+
+		printf("patch keys from %s into %s\n", params.keydir,
+				params.keydest);
+		info.keydir = params.keydir;
+		info.keyname = params.keyname;
+		info.algo = image_get_sig_algo(params.keyalgo);
+		info.require_keys = params.require_keys ? "conf" : NULL;
+
+		if (info.algo->add_verify_data(&info, dest_blob)) {
+			printf("Failed to add verification data");
+			return -1;
+		}
+
+		munmap(dest_blob, destfd_size);
+		close(destfd);
+		return 0;
+	}
 
 	/* set tparams as per input type_id */
 	tparams = imagetool_get_type(params.type);

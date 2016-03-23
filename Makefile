@@ -809,9 +809,12 @@ ifeq ($(CONFIG_DM_I2C_COMPAT),y)
 	@echo "===================================================="
 endif
 
+MKIMAGESIGFLAGS_dt.dtb = -k $(CONFIG_OF_KEYDIR) -p $(CONFIG_OF_KEYNAME) -L $(CONFIG_OF_KEYALGO) -r
 PHONY += dtbs
 dtbs dts/dt.dtb: checkdtc u-boot
 	$(Q)$(MAKE) $(build)=dts dtbs
+	$(if $(CONFIG_OF_ADD_PUBLIC_KEYS), \
+		$(call if_changed,mkimagesig))
 
 quiet_cmd_copy = COPY    $@
       cmd_copy = cp $< $@

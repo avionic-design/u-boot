@@ -64,6 +64,8 @@ struct image_tool_params {
 	const char *outfile;	/* Output filename */
 	const char *keydir;	/* Directory holding private keys */
 	const char *keydest;	/* Destination .dtb for public key */
+	const char *keyname;	/* public key name to write to destination */
+	const char *keyalgo;	/* public key algorithm */
 	const char *comment;	/* Comment to add to signature node */
 	int require_keys;	/* 1 to mark signing keys as 'required' */
 	int file_size;		/* Total size of output file */
