@@ -122,6 +122,10 @@ int board_init(void)
 
 	tegra_gpu_config();
 
+#ifdef CONFIG_HW_WATCHDOG
+	hw_watchdog_init();
+#endif
+
 #ifdef CONFIG_TEGRA_SPI
 	pin_mux_spi();
 #endif
