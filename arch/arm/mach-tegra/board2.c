@@ -214,6 +214,9 @@ int board_early_init_f(void)
 
 int board_late_init(void)
 {
+	int boardid = tegra_board_id();
+	if (boardid > -1)
+		setenv_hex("boardid", boardid);
 #if defined(CONFIG_TEGRA_SUPPORT_NON_SECURE)
 	if (tegra_cpu_is_non_secure()) {
 		printf("CPU is in NS mode\n");
