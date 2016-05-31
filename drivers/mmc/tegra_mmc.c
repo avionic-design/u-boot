@@ -2,7 +2,7 @@
  * (C) Copyright 2009 SAMSUNG Electronics
  * Minkyu Kang <mk7.kang@samsung.com>
  * Jaehoon Chung <jh80.chung@samsung.com>
- * Portions Copyright 2011-2015 NVIDIA Corporation
+ * Portions Copyright 2011-2016 NVIDIA Corporation
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -17,11 +17,25 @@
 #endif
 #include <asm/arch-tegra/mmc.h>
 #include <asm/arch-tegra/tegra_mmc.h>
+#include <blk.h>
+#include <dm.h>
 #include <mmc.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
+#ifndef	CONFIG_DM_MMC
 struct mmc_host mmc_host[CONFIG_SYS_MMC_MAX_DEVICE];
+#else	/* CONFIG_DM_MMC */
+struct tegra_mmc_plat {
+	struct mmc_config cfg;
+	struct mmc mmc;
+};
+
+struct tegra_mmc_priv {
+	struct mmc_host host;
+	bool removable;
+};
+#endif
 
 #if !CONFIG_IS_ENABLED(OF_CONTROL)
 #error "Please enable device tree support to use this driver"
@@ -64,10 +78,9 @@ static void mmc_prepare_data(struct mmc_host *host, struct mmc_data *data,
 {
 	unsigned char ctrl;
 
-
-	debug("buf: %p (%p), data->blocks: %u, data->blocksize: %u\n",
-		bbstate->bounce_buffer, bbstate->user_buffer, data->blocks,
-		data->blocksize);
+	debug("%s: buf: %p (%p), data->blocks: %u, data->blocksize: %u\n",
+	      __func__, bbstate->bounce_buffer, bbstate->user_buffer,
+	      data->blocks, data->blocksize);
 
 	writel((u32)(unsigned long)bbstate->bounce_buffer, &host->reg->sysad);
 	/*
@@ -90,7 +103,7 @@ static void mmc_prepare_data(struct mmc_host *host, struct mmc_data *data,
 static void mmc_set_transfer_mode(struct mmc_host *host, struct mmc_data *data)
 {
 	unsigned short mode;
-	debug(" mmc_set_transfer_mode called\n");
+	debug("%s called\n", __func__);
 	/*
 	 * TRNMOD
 	 * MUL1SIN0[5]	: Multi/Single Block Select
@@ -152,7 +165,7 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, struct mmc_cmd *cmd,
 	int result;
 	unsigned int mask = 0;
 	unsigned int retry = 0x100000;
-	debug(" mmc_send_cmd called\n");
+	debug("%s called\n", __func__);
 
 	result = mmc_wait_inhibit(host, cmd, data, 10 /* ms */);
 
@@ -324,6 +337,7 @@ static int tegra_mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 	size_t len;
 	struct bounce_buffer bbstate;
 	int ret;
+	debug("%s called\n", __func__);
 
 	if (data) {
 		if (data->flags & MMC_DATA_READ) {
@@ -351,8 +365,7 @@ static void mmc_change_clock(struct mmc_host *host, uint clock)
 	int div;
 	unsigned short clk;
 	unsigned long timeout;
-
-	debug(" mmc_change_clock called\n");
+	debug("%s called\n", __func__);
 
 	/*
 	 * Change Tegra SDMMCx clock divisor here. Source is PLLP_OUT0
@@ -396,8 +409,7 @@ static void mmc_change_clock(struct mmc_host *host, uint clock)
 	clk |= TEGRA_MMC_CLKCON_SD_CLOCK_ENABLE;
 	writew(clk, &host->reg->clkcon);
 
-	debug("mmc_change_clock: clkcon = %08X\n", clk);
-
+	debug("%s: clkcon = %08X\n", __func__, clk);
 out:
 	host->clock = clock;
 }
@@ -406,8 +418,7 @@ static void tegra_mmc_set_ios(struct mmc *mmc)
 {
 	struct mmc_host *host = mmc->priv;
 	unsigned char ctrl;
-	debug(" mmc_set_ios called\n");
-
+	debug("%s called\n", __func__);
 	debug("bus_width: %x, clock: %d\n", mmc->bus_width, mmc->clock);
 
 	/* Change clock first */
@@ -431,13 +442,13 @@ static void tegra_mmc_set_ios(struct mmc *mmc)
 		ctrl &= ~(1 << 1);
 
 	writeb(ctrl, &host->reg->hostctl);
-	debug("mmc_set_ios: hostctl = %08X\n", ctrl);
+	debug("%s: hostctl = %08X\n", __func__, ctrl);
 }
 
 static void mmc_reset(struct mmc_host *host, struct mmc *mmc)
 {
 	unsigned int timeout;
-	debug(" mmc_reset called\n");
+	debug("%s called\n", __func__);
 
 	/*
 	 * RSTALL[0] : Software reset for all
@@ -474,7 +485,7 @@ static int tegra_mmc_core_init(struct mmc *mmc)
 {
 	struct mmc_host *host = mmc->priv;
 	unsigned int mask;
-	debug(" mmc_core_init called\n");
+	debug("%s called\n", __func__);
 
 	mmc_reset(host, mmc);
 
@@ -518,8 +529,7 @@ static int tegra_mmc_core_init(struct mmc *mmc)
 static int tegra_mmc_getcd(struct mmc *mmc)
 {
 	struct mmc_host *host = mmc->priv;
-
-	debug("tegra_mmc_getcd called\n");
+	debug("%s called\n", __func__);
 
 	if (dm_gpio_is_valid(&host->cd_gpio))
 		return dm_gpio_get_value(&host->cd_gpio);
@@ -534,6 +544,7 @@ static const struct mmc_ops tegra_mmc_ops = {
 	.getcd		= tegra_mmc_getcd,
 };
 
+#ifndef	CONFIG_DM_MMC
 static int do_mmc_init(int dev_index, bool removable)
 {
 	struct mmc_host *host;
@@ -544,8 +555,9 @@ static int do_mmc_init(int dev_index, bool removable)
 	if (!host->enabled)
 		return -1;
 
-	debug(" do_mmc_init: index %d, bus width %d pwr_gpio %d cd_gpio %d\n",
-	      dev_index, host->width, gpio_get_number(&host->pwr_gpio),
+	debug("%s: index %d, bus width %d pwr_gpio %d cd_gpio %d\n",
+	      __func__, dev_index, host->width,
+	      gpio_get_number(&host->pwr_gpio),
 	      gpio_get_number(&host->cd_gpio));
 
 	host->clock = 0;
@@ -738,3 +750,163 @@ void tegra_mmc_init(void)
 		return;
 	}
 }
+
+#else	/* DM_MMC */
+
+static int tegra_mmc_ofdata_to_platdata(struct udevice *dev)
+{
+	struct tegra_mmc_priv *priv = dev_get_priv(dev);
+	struct mmc_host *host = &priv->host;
+	const void *blob = gd->fdt_blob;
+	const int node = dev->of_offset;
+
+	debug("%s: entry\n", __func__);
+	host->enabled = fdtdec_get_is_enabled(blob, node);
+
+	host->reg = (struct tegra_mmc *)fdtdec_get_addr(blob, node, "reg");
+	if ((fdt_addr_t)host->reg == FDT_ADDR_T_NONE) {
+		debug("%s: no sdmmc base reg info found\n", __func__);
+		return -ENODEV;
+	}
+
+#ifndef CONFIG_TEGRA186
+	host->mmc_id = clock_decode_periph_id(blob, node);
+	if (host->mmc_id == PERIPH_ID_NONE) {
+		debug("%s: could not decode periph id\n", __func__);
+		return -ENODEV;
+	}
+#endif
+	/*
+	 * NOTE: mmc->bus_width is determined by mmc.c dynamically.
+	 * TBD: Override it with this value?
+	 */
+	host->width = fdtdec_get_int(blob, node, "bus-width", 0);
+	if (!host->width)
+		debug("%s: no sdmmc width found\n", __func__);
+
+	/* These GPIOs are optional */
+	gpio_request_by_name_nodev(blob, node, "cd-gpios", 0, &host->cd_gpio,
+				   GPIOD_IS_IN);
+	gpio_request_by_name_nodev(blob, node, "wp-gpios", 0, &host->wp_gpio,
+				   GPIOD_IS_IN);
+	gpio_request_by_name_nodev(blob, node, "power-gpios", 0,
+				   &host->pwr_gpio, GPIOD_IS_OUT);
+
+	priv->removable = !fdtdec_get_bool(blob, node, "non-removable");
+
+	debug("%s: found controller at %p, width = %d, periph_id = %d\n",
+	      __func__, host->reg, host->width,
+#ifndef CONFIG_TEGRA186
+		host->mmc_id
+#else
+		-1
+#endif
+	);
+	debug("%s: pwr_gpio %d, cd_gpio %d, wp_gpio %d\n",
+	      __func__, gpio_get_number(&host->pwr_gpio),
+	      gpio_get_number(&host->cd_gpio),
+	      gpio_get_number(&host->wp_gpio));
+
+	return 0;
+}
+
+static int tegra_mmc_probe(struct udevice *dev)
+{
+	struct tegra_mmc_priv *priv = dev_get_priv(dev);
+	struct mmc_host *host = &priv->host;
+	struct mmc *mmc;
+
+	debug("%s: entry\n", __func__);
+	if (!host->enabled)
+		return -1;
+
+	host->clock = 0;
+#ifndef CONFIG_TEGRA186
+	clock_start_periph_pll(host->mmc_id, CLOCK_ID_PERIPH, 20000000);
+#endif
+	if (dm_gpio_is_valid(&host->pwr_gpio))
+		dm_gpio_set_value(&host->pwr_gpio, 1);
+
+	memset(&host->cfg, 0, sizeof(host->cfg));
+
+	host->cfg.name = "Tegra SD/MMC";
+	host->cfg.ops = &tegra_mmc_ops;
+
+	host->cfg.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
+	host->cfg.host_caps = 0;
+	if (host->width == 8)
+		host->cfg.host_caps |= MMC_MODE_8BIT;
+	if (host->width >= 4)
+		host->cfg.host_caps |= MMC_MODE_4BIT;
+	host->cfg.host_caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
+
+	/*
+	 * min freq is for card identification, and is the highest
+	 *  low-speed SDIO card frequency (actually 400KHz)
+	 * max freq is highest HS eMMC clock as per the SD/MMC spec
+	 *  (actually 52MHz)
+	 */
+	host->cfg.f_min = 375000;
+	host->cfg.f_max = 48000000;
+
+	host->cfg.b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
+
+	mmc = mmc_create(&host->cfg, host);
+	if (mmc == NULL)
+		return -1;
+
+	/*
+	 *Due to the way DM parses MMC nodes, device numbers
+	 * are swapped from what we normally expect. Fix that here.
+	 */
+        mmc->block_dev.devnum ^= 1;
+	host->id = mmc->block_dev.devnum;
+#ifndef	CONFIG_BLK
+	mmc->block_dev.removable = priv->removable;
+#endif
+
+	return 0;
+}
+
+static int tegra_mmc_remove(struct udevice *dev)
+{
+	debug("%s: entry\n", __func__);
+	return -ENODEV;
+}
+
+static int tegra_mmc_bind(struct udevice *dev)
+{
+#ifdef CONFIG_BLK
+	struct tegra_mmc_plat *plat = dev_get_platdata(dev);
+	int ret;
+	debug("%s: entry\n", __func__);
+
+	ret = mmc_bind(dev, &plat->mmc, &plat->cfg);
+	if (ret)
+		return ret;
+#endif
+	return 0;
+}
+
+static const struct udevice_id tegra_mmc_ids[] = {
+	{ .compatible = "nvidia,tegra20-sdhci" },
+	{ .compatible = "nvidia,tegra30-sdhci" },
+	{ .compatible = "nvidia,tegra114-sdhci" },
+	{ .compatible = "nvidia,tegra124-sdhci" },
+	{ .compatible = "nvidia,tegra210-sdhci" },
+	{ .compatible = "nvidia,tegra186-sdhci" },
+	{ }
+};
+
+U_BOOT_DRIVER(tegra_mmc_drv) = {
+	.name		= "tegra_mmc",
+	.id		= UCLASS_MMC,
+	.of_match	= tegra_mmc_ids,
+	.ofdata_to_platdata = tegra_mmc_ofdata_to_platdata,
+	.bind		= tegra_mmc_bind,
+	.probe		= tegra_mmc_probe,
+	.remove		= tegra_mmc_remove,
+	.priv_auto_alloc_size = sizeof(struct tegra_mmc_priv),
+	.platdata_auto_alloc_size = sizeof(struct tegra_mmc_plat),
+};
+#endif	/* !CONFIG_DM_MMC */
