@@ -21,5 +21,6 @@
 	sdhci@3460000 {
 		status = "okay";
 		bus-width = <8>;
+		non-removable;
 	};
 };
