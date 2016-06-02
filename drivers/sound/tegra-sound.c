@@ -123,10 +123,10 @@ void set_mclk_from_ap(void)
 	debug("%s: Set codec MCLK to CLK1_OUT, 12MHz OSC\n", __func__);
 
 	reg = readl(0x60006360);	/* CLK_ENB_V */
-	reg |= (1 << 24);		/* CLK_ENB_EXTPERIPH1 */
+	reg |= (1 << 26);		/* CLK_ENB_EXTPERIPH3 */
 	writel(reg, 0x60006360);
 	reg = readl(0x7000E5A8);	/* PMC_CLK_CNTRL */
-	reg |= (1 << 2);		/* CLK1_EN */
+	reg |= (1 << 18);		/* CLK3_EN */
 	writel(reg, 0x7000E5A8);
 	/* CLK1_OUT -> codec MCLK s/b running at 12MHz (OSC) now */
 	writel(0x60000000, 0x600063EC);

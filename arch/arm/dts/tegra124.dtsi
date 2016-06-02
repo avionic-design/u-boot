@@ -1025,9 +1025,9 @@
 		interrupt-parent = <&gic>;
 	};
 
-	sound@70301100 {
+	sound@70301300 {
 		compatible = "nvidia,tegra114-sound";
-		reg = <0x70301100 0x100>;
-		clocks = <&tegra_car 11>;
+		reg = <0x70301300 0x100>;
+		clocks = <&tegra_car 101>;
 	};
 };

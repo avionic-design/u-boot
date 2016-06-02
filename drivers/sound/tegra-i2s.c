@@ -165,7 +165,7 @@ int i2s_transfer_tx_data(struct i2stx_info *pi2s_tx, unsigned int *data,
 	while (data_size > 0) {
 		start = get_timer(0);
 
-		if (!(I2S1_TX_FIFO_FULL & readl(&ahub->ahub_i2s_live_stat))) {
+		if (!(I2S3_TX_FIFO_FULL & readl(&ahub->ahub_i2s_live_stat))) {
 			writel(*data++, &ahub->ahub_channel0_txfifo);
 			data_size--;
 		} else {

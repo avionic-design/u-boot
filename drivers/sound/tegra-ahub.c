@@ -62,8 +62,8 @@ int ahub_init(unsigned int bps, unsigned int channels)
 		TEGRA_AHUB_CHANNEL_CTRL_TX_PACK_16;
 	writel(reg, &ahub->ahub_channel0_ctrl);
 
-	/* Set up AUDIO_I2S1_RX0 connection to APBIF_TX0 (in AHUB) */
-	writel(APBIF_TX0, &audio->audio_i2s1_rx0);
+	/* Set up AUDIO_I2S3_RX0 connection to APBIF_TX0 (in AHUB) */
+	writel(APBIF_TX0, &audio->audio_i2s3_rx0);
 
 	return 0;
 }
