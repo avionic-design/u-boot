@@ -33,6 +33,8 @@
 #elif defined(CONFIG_SOUND_MAX98090)
 #include "max98090.h"
 #include "maxim_codec.h"
+#elif defined(CONFIG_SOUND_TLV320DAC3100)
+#include "tlv320dac3100.h"
 #endif
 
 /* defines */
@@ -99,6 +101,11 @@ static int codec_init(const void *blob, struct i2stx_info *pi2s_tx)
 		ret = maxim_codec_init(blob, codectype, pi2s_tx->samplingrate,
 			(pi2s_tx->samplingrate * (pi2s_tx->rfs)),
 			pi2s_tx->bitspersample);
+	}
+#elif defined(CONFIG_SOUND_TLV320DAC3100)
+	if (!strcmp(codectype, "tlv320dac3100")) {
+		ret = dac3100_init(blob, pi2s_tx->samplingrate,
+				12000000, pi2s_tx->bitspersample);
 	}
 #else
 	if (0) {

@@ -12,3 +12,4 @@ obj-$(CONFIG_SOUND_WM8994)	+= wm8994.o
 obj-$(CONFIG_SOUND_MAX98095)	+= max98095.o
 obj-$(CONFIG_TEGRA_SOUND)	+= tegra-sound.o tegra-ahub.o
 obj-$(CONFIG_TEGRA_I2S)		+= tegra-i2s.o
+obj-$(CONFIG_SOUND_TLV320DAC3100)	+= tlv320dac3100.o

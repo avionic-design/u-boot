@@ -78,4 +78,12 @@ config SOUND_WM8994
 	  audio data and I2C for codec control. At present it only works
 	  with the Samsung I2S driver.
 
+config SOUND_TLV320DAC3100
+	bool "Support TI TLV320DAC3100 audio codec"
+	depends on TEGRA_I2S
+	help
+	  Enable the tlv320dac3100 audio codec. This is connected via I2S for
+	  audio data and I2C for codec control. At present it only works with
+	  the Tegra I2S driver.
+
 endmenu
