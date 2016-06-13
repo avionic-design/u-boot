@@ -169,6 +169,60 @@ int sound_init(const void *blob)
 	return ret;
 }
 
+#define SINE_LENGTH 50
+static unsigned int sine[50] = {
+	0x3fff,
+	0x4804,
+	0x4fe9,
+	0x578e,
+	0x5ed4,
+	0x659d,
+	0x6bce,
+	0x714f,
+	0x7608,
+	0x79e7,
+	0x7cdd,
+	0x7edc,
+	0x7fde,
+	0x7fde,
+	0x7edc,
+	0x7cdd,
+	0x79e7,
+	0x7608,
+	0x714f,
+	0x6bce,
+	0x659d,
+	0x5ed4,
+	0x578e,
+	0x4fe9,
+	0x4804,
+	0x3fff,
+	0x37fa,
+	0x3015,
+	0x2870,
+	0x212a,
+	0x1a61,
+	0x1430,
+	0xeaf,
+	0x9f6,
+	0x617,
+	0x321,
+	0x122,
+	0x20,
+	0x20,
+	0x122,
+	0x321,
+	0x617,
+	0x9f6,
+	0xeaf,
+	0x1430,
+	0x1a61,
+	0x212a,
+	0x2870,
+	0x3015,
+	0x37fa,
+};
+
 /*
  * Generates square wave sound data for 1 second
  *
@@ -176,7 +230,7 @@ int sound_init(const void *blob)
  * @param size          size of the buffer
  * @param freq          frequency of the wave
  */
-static void sound_prepare_buffer(unsigned short *data, int size, uint32_t freq)
+static void sound_prepare_buffer(unsigned int *data, int size, uint32_t freq)
 {
 	const int sample = 48000;
 	const unsigned short amplitude = 16000; /* between 1 and 32767 */
@@ -189,6 +243,7 @@ static void sound_prepare_buffer(unsigned short *data, int size, uint32_t freq)
 	if (size % 2)
 		size--;
 
+#if 0
 	while (size) {
 		int i;
 		for (i = 0; size && i < half; i++) {
@@ -202,6 +257,17 @@ static void sound_prepare_buffer(unsigned short *data, int size, uint32_t freq)
 			*data++ = -amplitude;
 		}
 	}
+#else
+	{
+		int i;
+		for (i = 0; size; i++) {
+			size -= 2;
+			*data++ = sine[i % SINE_LENGTH] << 16 |
+				sine[i % SINE_LENGTH];
+			size--;
+		}
+	}
+#endif
 }
 
 int sound_play(uint32_t msec, uint32_t frequency)
@@ -222,8 +288,8 @@ int sound_play(uint32_t msec, uint32_t frequency)
 		return -1;
 	}
 
-	sound_prepare_buffer((unsigned short *)data,
-			     data_size / sizeof(unsigned short), frequency);
+	sound_prepare_buffer(data,
+			     data_size / sizeof(unsigned int), frequency);
 
 	while (msec >= 1000) {
 		ret = i2s_transfer_tx_data(&g_i2stx_pri, data,
