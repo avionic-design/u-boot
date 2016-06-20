@@ -20,3 +20,9 @@ config TI_EDMA3
 	  regions.
 
 endmenu # menu "DMA Support"
+
+config TEGRA_DMA
+	bool "Enable Tegra DMA driver"
+	help
+	  Simple driver for the Tegra APBDMA controller. Supports
+	  only one channel for now.

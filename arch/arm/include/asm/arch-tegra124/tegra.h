@@ -13,6 +13,7 @@
 #define NV_PA_MC_BASE		0x70019000	/* Mem Ctlr regs (MCB, etc.) */
 #define NV_PA_AHB_BASE		0x6000C000	/* System regs (AHB, etc.) */
 /* Place-holders for now, until these are fully in device-tree */
+#define NV_PA_APBDMA_BASE	0x60020000	/* APBDMA regs */
 #define NV_PA_AHUB_BASE		0x70300000	/* Audio Hub, 8KB total */
 #define NV_PA_APBIF_BASE	0x70300000	/* APBIF block regs */
 #define NV_PA_APBIF2_BASE	0x70300200	/* APBIF2 block regs */
