@@ -47,9 +47,34 @@ static int do_play(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	return 0;
 }
 
+/* play sound from memory*/
+static do_play_mem(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
+{
+	int addr;
+	int len;
+	int ret;
+
+	if (argc < 3) {
+		printf("%s: Bad arguments\n", __func__);
+		return CMD_RET_USAGE;
+	}
+
+	addr = simple_strtoul(argv[1], NULL, 10);
+	len = simple_strtoul(argv[2], NULL, 10);
+
+	ret = sound_playmem(addr, len);
+	if (ret) {
+		printf("play failed\n");
+		return CMD_RET_FAILURE;
+	}
+
+	return 0;
+}
+
 static cmd_tbl_t cmd_sound_sub[] = {
 	U_BOOT_CMD_MKENT(init, 0, 1, do_init, "", ""),
 	U_BOOT_CMD_MKENT(play, 2, 1, do_play, "", ""),
+	U_BOOT_CMD_MKENT(play_mem, 2, 1, do_play_mem, "", ""),
 };
 
 /* process sound command */
@@ -77,4 +102,5 @@ U_BOOT_CMD(
 	"sound sub-system",
 	"init - initialise the sound driver\n"
 	"sound play [len] [freq] - play a sound for len ms at freq hz\n"
+	"sound play_mem addr len - play sound with len (bytes) from addr\n"
 );

@@ -54,4 +54,11 @@ int sound_init(const void *blob);
  */
 int sound_play(uint32_t msec, uint32_t frequency);
 
+/*
+ * plays the pcm data buffer given in *data
+ *
+ * @return	int 0 for success, -1 for error
+ */
+int sound_playmem(unsigned int *data, int size);
+
 #endif  /* __SOUND__H__ */

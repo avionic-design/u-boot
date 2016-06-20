@@ -308,3 +308,11 @@ int sound_play(uint32_t msec, uint32_t frequency)
 
 	return ret;
 }
+
+int sound_playmem(unsigned int *data, int size)
+{
+	int ret;
+	printf("play sound\n");
+	ret = i2s_transfer_tx_data(&g_i2stx_pri, data, (size / sizeof(int)));
+	return 0;
+}
