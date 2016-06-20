@@ -28,6 +28,7 @@
 #include <libfdt.h>
 #include <fdtdec.h>
 #include "tegra-ahub.h"
+#include "../dma/tegra-dma.h"
 
 /*
  * This is the Tegra30/Tegra114 I2S driver used by the 'sound' command.
@@ -155,30 +156,22 @@ int i2s_transfer_tx_data(struct i2stx_info *pi2s_tx, unsigned int *data,
 
 	ahub_init(pi2s_tx->bitspersample, pi2s_tx->channels);
 
-	/* Fill the TX buffer before starting the TX transmit */
-	for (i = 0; i < FIFO_LENGTH; i++)
-		writel(*data++, &ahub->ahub_channel0_txfifo);
-
-	data_size -= FIFO_LENGTH;
 	i2s_txctrl(i2s_reg, I2S_TX_ON);
-
-	while (data_size > 0) {
-		start = get_timer(0);
-
-		if (!(I2S3_TX_FIFO_FULL & readl(&ahub->ahub_i2s_live_stat))) {
-			writel(*data++, &ahub->ahub_channel0_txfifo);
-			data_size--;
-		} else {
-			debug("%s: FIFO full: data_size %lu\n", __func__,
-			      data_size);
-			if (get_timer(start) > TIMEOUT_I2S_TX) {
-				i2s_txctrl(i2s_reg, I2S_TX_OFF);
-				debug("%s: I2S Transfer Timeout\n", __func__);
-				return -1;
-			}
-		}
-	}
+	start = get_timer(0);
+	tegra_dma_transfer((u32)data, (u32)&ahub->ahub_channel0_txfifo,
+			AHB_TO_APB, APBIF_CH0, data_size, false);
+	do {
+		debug("status: 0x%x, byte_status: %d\n",
+				tegra_dma_get_status(), tegra_dma_get_byte_status());
+		udelay(10);
+	} while (tegra_dma_get_byte_status() < data_size * 4);
+	debug("%s: Wait for FIFO empty\n", __func__);
+	while(!(I2S3_TX_FIFO_EMPTY & readl(&ahub->ahub_i2s_live_stat)))
+		udelay(100);
+	tegra_dma_set_enable(0);
 	i2s_txctrl(i2s_reg, I2S_TX_OFF);
+	debug("%s: FIFO is empty (transmit duration: %d)\n", __func__,
+			get_timer(0) - start);
 
 	return 0;
 }
@@ -246,7 +239,7 @@ int i2s_tx_init(struct i2stx_info *pi2s_tx)
 		(tmp << TEGRA_AUDIOCIF_CTRL_CLIENT_CHANNELS_SHIFT);
 	reg |= (audio_bits << TEGRA_AUDIOCIF_CTRL_AUDIO_BITS_SHIFT) |
 		(audio_bits << TEGRA_AUDIOCIF_CTRL_CLIENT_BITS_SHIFT);
-	reg |= (4 << TEGRA_AUDIOCIF_CTRL_FIFO_THRESHOLD_SHIFT);	/* THRESHOLD */
+	reg |= (0 << TEGRA_AUDIOCIF_CTRL_FIFO_THRESHOLD_SHIFT);	/* THRESHOLD */
 	writel(reg, &i2s_reg->i2s_cif_tx_ctrl);
 	reg |= (1 << 2);		/* DIRECTION = RXCIF */
 	writel(reg, &i2s_reg->i2s_cif_tx_ctrl);

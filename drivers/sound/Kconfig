@@ -33,6 +33,7 @@ config I2S_SAMSUNG
 
 config TEGRA_SOUND
 	bool "Enable sound support on Tegra"
+	select TEGRA_DMA
 	help
 	  Support making sounds through an audio codec. This is normally a
 	  beep at a chosen frequency for a selected length of time. However
