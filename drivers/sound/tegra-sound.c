@@ -272,14 +272,15 @@ static void sound_prepare_buffer(unsigned int *data, int size, uint32_t freq)
 
 int sound_play(uint32_t msec, uint32_t frequency)
 {
-	unsigned int *data;
+	static unsigned int *data = NULL;
 	unsigned long data_size;
 	unsigned int ret = 0;
 
 	/* Buffer length computation */
 	data_size = g_i2stx_pri.samplingrate * g_i2stx_pri.channels;
 	data_size *= (g_i2stx_pri.bitspersample / SOUND_BITS_IN_BYTE);
-	data = malloc(data_size);
+	if (data == NULL)
+		data = (void*)noncached_alloc(data_size, 4);
 	debug("%s: data_size = %ld, data @ 0x%08X\n", __func__, data_size,
 	      (unsigned)data);
 
@@ -304,8 +305,6 @@ int sound_play(uint32_t msec, uint32_t frequency)
 	}
 
 	debug("%s: I2S register dump:\n", __func__);
-
-	free(data);
 
 	return ret;
 }
