@@ -181,7 +181,6 @@ static int set_gpt_info(struct blk_desc *dev_desc,
 	disk_partition_t *parts;
 	int errno = 0;
 	uint64_t size_ll, start_ll;
-	lbaint_t offset = 0;
 
 	debug("%s:  lba num: 0x%x %d\n", __func__,
 	      (unsigned int)dev_desc->lba, (unsigned int)dev_desc->lba);
@@ -297,14 +296,8 @@ static int set_gpt_info(struct blk_desc *dev_desc,
 		}
 		if (extract_env(val, &p))
 			p = val;
-		if ((strcmp(p, "-") == 0)) {
-			/* remove first usable lba and last block */
-			parts[i].size = dev_desc->lba - 34  - 1 - offset;
-		} else {
-			size_ll = ustrtoull(p, &p, 0);
-			parts[i].size = lldiv(size_ll, dev_desc->blksz);
-		}
-
+		size_ll = ustrtoull(p, &p, 0);
+		parts[i].size = lldiv(size_ll, dev_desc->blksz);
 		free(val);
 
 		/* start address */
@@ -316,8 +309,6 @@ static int set_gpt_info(struct blk_desc *dev_desc,
 			parts[i].start = lldiv(start_ll, dev_desc->blksz);
 			free(val);
 		}
-
-		offset += parts[i].size + parts[i].start;
 
 		/* bootable */
 		if (found_key(tok, "bootable"))
