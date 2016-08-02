@@ -17,7 +17,8 @@
 		sdhci1 = "/sdhci@700b0400";
 
 		usb0 = "/usb@7d000000";
-		usb1 = "/usb@7d008000";
+		usb1 = "/usb@7d004000";
+		usb2 = "/usb@7d008000";
 	};
 
 	memory {
