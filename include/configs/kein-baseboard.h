@@ -54,6 +54,20 @@
 #define CONFIG_PCI_PNP
 #define CONFIG_CMD_PCI
 
+#define BOARD_EXTRA_ENV_SETTINGS					\
+	"get_mmc_blocks="						\
+		"setexpr mmc_blocks ${filesize} + 1ff; "		\
+		"setexpr mmc_blocks ${mmc_blocks} / 200\0"		\
+	"update_uboot="						\
+		"if test -n \"${filesize}\" -a \"${filesize}\" -gt 0; "	\
+		"then "							\
+			"run get_mmc_blocks; "				\
+			"mmc dev 0 1; "					\
+			"mmc write ${loadaddr} 0 ${mmc_blocks}; "	\
+		"else "							\
+			"echo Please load the U-Boot image first; "	\
+		"fi\0"
+
 #include "tegra-common-usb-gadget.h"
 #include "tegra-common-post.h"
 
