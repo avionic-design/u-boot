@@ -720,6 +720,8 @@ int ax88179_eth_probe(struct usb_device *dev, unsigned int ifnum,
 int ax88179_eth_get_info(struct usb_device *dev, struct ueth_data *ss,
 				struct eth_device *eth)
 {
+	struct asix_private *dev_priv = (struct asix_private *)ss->dev_priv;
+
 	if (!eth) {
 		debug("%s: missing parameter.\n", __func__);
 		return 0;
@@ -732,7 +734,7 @@ int ax88179_eth_get_info(struct usb_device *dev, struct ueth_data *ss,
 	eth->write_hwaddr = asix_write_hwaddr;
 	eth->priv = ss;
 
-	if (asix_basic_reset(ss))
+	if (asix_basic_reset(ss, dev_priv))
 		return 0;
 
 	/* Get the MAC address */
