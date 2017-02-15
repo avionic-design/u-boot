@@ -73,4 +73,7 @@
 /* GPU needs setup */
 #define CONFIG_TEGRA_GPU
 
+/* Due to DMA boundaries limited to 512KiB and a block size of 512 */
+#define CONFIG_SYS_MMC_MAX_BLK_COUNT   1024
+
 #endif /* _TEGRA124_COMMON_H_ */
